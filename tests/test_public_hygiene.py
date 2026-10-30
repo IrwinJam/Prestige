@@ -1,7 +1,7 @@
-"""Checks that nothing which shouldn't be public is about to be committed.
+"""Checks that nothing private is about to be committed.
 
-This repo is public. It must never hold attack text, run logs, traces or keys. These tests look at every
-file git would commit: tracked files plus untracked ones that aren't ignored.
+The repo goes public. Attack text, run data and keys never belong in it. These tests look at every
+file git would commit, tracked or not yet added.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 MAX_BYTES = 512 * 1024
 BANNED_SUFFIXES = {".sqlite", ".sqlite3", ".jsonl", ".db"}
-# Fields found in AgentDojo's per-task logs. A committed JSON file with several of them is run data.
+# Fields in AgentDojo's per-task logs. A JSON file with several of them is run data.
 LOG_FIELDS = {"suite_name", "pipeline_name", "user_task_id", "injection_task_id", "attack_type", "injections", "messages", "utility", "security"}
 
 
@@ -45,7 +45,7 @@ def test_no_run_data_or_keys(files):
 
 def test_no_large_files(files):
     big = [f for f in files if (ROOT / f).is_file() and (ROOT / f).stat().st_size > MAX_BYTES]
-    assert not big, f"files over {MAX_BYTES // 1024} KB would be committed, which usually means raw logs: {big}"
+    assert not big, f"files over {MAX_BYTES // 1024} KB would be committed, likely raw logs: {big}"
 
 
 def test_no_benchmark_logs(files):

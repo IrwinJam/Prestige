@@ -1,7 +1,7 @@
-"""Neutral building blocks for guard tests.
+"""Neutral test data.
 
-No instruction text anywhere. The guard decides by where a value came from, so a test only needs a
-marker value placed in a tool's output and a scripted reply that uses it.
+No instruction text anywhere. The guard judges where a value came from, so a marker in tool output
+and a scripted reply are enough.
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ def reply(*calls: tuple[str, str, dict[str, Any]], content: str | None = None) -
 
 
 def read_then(text: str) -> dict[str, Any]:
-    """A conversation where the user asks for something and a file read returned `text`."""
+    """A conversation where a file read returned `text`."""
     return chat(SYSTEM, user("Pay my bill."), called("c1", "read_file", file_path="bill.txt"), tool("c1", text))
 
 

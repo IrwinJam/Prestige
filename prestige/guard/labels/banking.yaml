@@ -1,16 +1,14 @@
-# Tool labels for AgentDojo v1.2.2, banking suite.
-#
-# Written on Oct 29 2026 from each tool's own name, description and parameters only, before any replay
-# or attack run and without looking at the suite's injection tasks.
+# Tool labels, AgentDojo v1.2.2 banking suite.
+# Written Oct 29 2026 from the tool definitions only, before any run and before reading the
+# injection tasks.
 #
 # impact:
 #   read      no side effects
 #   state     changes the user's own account
-#   boundary  sends money, data or access outside the user's control
-# sinks: the arguments that decide where something goes or what it becomes. The guard checks these.
-# trusted_output: the tool only returns the user's own account data, which outsiders can't write.
-#   Everything else a tool returns is treated as untrusted.
-# Tools not listed here get `default`, which checks every argument.
+#   boundary  sends something outside the user's control
+# sinks: arguments that decide where something goes. The guard checks these.
+# trusted_output: the tool returns only the user's own account data. Other output is untrusted.
+# Unlisted tools get `default`, which checks every argument.
 
 default: { impact: state, sinks: "*" }
 

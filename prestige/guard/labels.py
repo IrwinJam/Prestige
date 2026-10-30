@@ -1,7 +1,6 @@
-"""Tool labels: which tools matter, and which of their arguments decide where things go.
+"""Tool labels: an impact level per tool, and the arguments that pick where things go.
 
-Labels live in YAML files, one per environment. The bundled ones are in `labels/`, and
-`Labels.load("banking")` finds them by name. Any other path works too.
+One YAML file per suite. `Labels.load("banking")` finds bundled files by name. Paths work too.
 """
 
 from __future__ import annotations
@@ -85,5 +84,5 @@ def _label(where: str, raw: Any) -> ToolLabel:
             raise LabelError(f'{where}: sinks must be a list of argument names or "*"')
         sinks = tuple(sinks)
     if impact == "read" and sinks:
-        raise LabelError(f"{where}: read tools aren't checked, so they can't have sinks")
+        raise LabelError(f"{where}: read tools can't have sinks")
     return ToolLabel(impact, sinks, bool(raw.get("trusted_output", False)))

@@ -1,17 +1,11 @@
-"""The guard's rules, and what happens to a reply when one of them fires.
+"""Guard rules, and what a blocked reply looks like.
 
-For every high-impact tool call in a reply:
+R1, sink provenance: a sink value appears in untrusted tool output and nowhere in trusted text.
+R2, tool named by content: untrusted output names the tool and trusted text doesn't. Flagged by default.
 
-- R1, sink provenance: a sink argument's value shows up in untrusted tool output and nowhere on the
-  trusted side. The agent is about to send something where only outside content pointed it.
-- R2, tool named by content: untrusted output names the tool being called, and the trusted side never
-  does. A weaker signal, so by default it's only flagged.
-
-A blocked call is removed from the reply before the agent sees it, and the reply gets a short notice
-instead. The notice names the tool, the argument and where the value came from. It never repeats the
-value, which may be text an attacker wrote.
-
-Findings keep a hash and the length of a value, never the value itself.
+A blocked call leaves the reply before the agent sees it. A short notice takes its place. The notice
+names the call and the source, never the value, which may be attacker text. Findings store a hash and
+a length.
 """
 
 from __future__ import annotations
@@ -37,10 +31,10 @@ class Finding:
     rule: str
     tool: str
     call_id: str
-    arg: str | None  # the sink argument for R1, None for R2
+    arg: str | None  # sink argument for R1, None for R2
     value_hash: str | None
     value_len: int | None
-    source: str  # the tool whose output the value or the tool name came from
+    source: str  # tool whose output held the value or the tool name
     source_index: int
     blocked: bool
 
@@ -55,7 +49,7 @@ class Guard:
             raise ValueError(f"unknown rules {sorted(unknown)}; choose from {RULES}")
 
     def check(self, protocol: Protocol, request: dict[str, Any], response: dict[str, Any], skip: Iterable[str] = ()) -> list[Finding]:
-        """Findings for the tool calls in `response`, given the conversation in `request`."""
+        """Findings for the tool calls in `response`, judged against `request`."""
         active = self.block | self.flag
         if not active:
             return []
@@ -83,7 +77,7 @@ class Guard:
         return findings
 
     def screen(self, protocol: Protocol, request: dict[str, Any], response: dict[str, Any], skip: Iterable[str] = ()) -> tuple[dict[str, Any], list[Finding]]:
-        """The reply the agent should see, and the findings. Blocked calls are removed."""
+        """The reply the agent should see, with blocked calls removed, plus findings."""
         findings = self.check(protocol, request, response, skip)
         blocked = [f for f in findings if f.blocked]
         if not blocked:
@@ -96,13 +90,13 @@ def notice(blocked: list[Finding]) -> str:
     seen = set()
     for f in blocked:
         if f.rule == "R1":
-            line = f"Blocked {f.tool}: the {f.arg} came from the output of {f.source}, not from the user."
+            line = f"Blocked {f.tool}: {f.arg} came from {f.source} output, not from the user."
         else:
-            line = f"Blocked {f.tool}: only the output of {f.source} asked for this action, not the user."
+            line = f"Blocked {f.tool}: only {f.source} output asked for it."
         if line not in seen:
             seen.add(line)
             lines.append(line)
-    lines.append("Ask the user to confirm before trying this again.")
+    lines.append("Ask the user before trying again.")
     return " ".join(lines)
 
 

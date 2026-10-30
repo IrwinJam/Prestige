@@ -9,7 +9,7 @@ def test_r1_blocks_a_sink_value_that_only_tool_output_mentioned():
     message = response["choices"][0]["message"]
     assert message["tool_calls"] is None
     assert response["choices"][0]["finish_reason"] == "stop"
-    assert "Blocked send_money: the recipient came from the output of read_file" in message["content"]
+    assert "Blocked send_money: recipient came from read_file output" in message["content"]
     [f] = findings
     assert (f.rule, f.tool, f.arg, f.source, f.source_index, f.blocked) == ("R1", "send_money", "recipient", "read_file", 3, True)
 
@@ -36,7 +36,7 @@ def test_read_tools_and_non_sink_arguments_are_not_checked():
 
 
 def test_a_value_seen_nowhere_is_not_blocked():
-    # A known gap: R1 needs the value to show up in tool output. Said up front in the plan.
+    # Known gap: R1 needs the value in tool output.
     assert Guard(LABELS).check("chat_completions", read_then("nothing here"), reply(("c2", "send_money", {"recipient": MARKER}))) == []
 
 

@@ -1,13 +1,11 @@
-"""Where a value came from: the user's side of the conversation, or a tool's output.
+"""Where a value came from.
 
-The request is split into spans. System, developer and user messages are trusted. A tool's output is
-untrusted unless its label says `trusted_output`. Assistant messages are neither, since the model
-writes them from both.
+The system prompt and user messages are trusted. Tool output is untrusted unless its label sets
+`trusted_output`. Assistant messages count as neither.
 
-A value is "found in" a span if it appears there after light normalization: case, runs of whitespace,
-and a URL's scheme, `www.` and trailing slash don't matter. Short values have to match a whole token,
-so "bob" isn't found in "bobby". Long values are also compared with spaces and hyphens removed, so an
-account number written in groups still matches.
+Matching ignores case and spacing. URLs match without scheme or `www.`. Short values must match a
+whole token, so "bob" doesn't match "bobby". Long values also match with spaces and hyphens removed,
+so a grouped account number still matches.
 """
 
 from __future__ import annotations
@@ -21,8 +19,8 @@ from harness.usage import Protocol
 
 from prestige.guard.labels import ALL, Labels
 
-MIN_CHARS = 3  # shorter values are never treated as found anywhere
-DENSE_MIN_CHARS = 8  # values at least this long also match with spaces and hyphens removed
+MIN_CHARS = 3  # shorter values never match
+DENSE_MIN_CHARS = 8  # from this length, values also match with spaces and hyphens removed
 TRUSTED_ROLES = ("system", "developer", "user")
 
 _URL_PREFIX = re.compile(r"^(?:https?://)?(?:www\.)?")
@@ -61,7 +59,7 @@ def spans(protocol: Protocol, request: dict[str, Any], labels: Labels) -> list[S
 
 
 def text_of(content: Any) -> str:
-    """Plain text from a string, a list of content parts, or a single part."""
+    """Plain text from a string or from content parts."""
     if content is None:
         return ""
     if isinstance(content, str):
@@ -74,7 +72,7 @@ def text_of(content: Any) -> str:
 
 
 def sink_values(args: dict[str, Any], sinks: tuple[str, ...] | str) -> list[tuple[str, str]]:
-    """(argument name, value) for every string or number inside the sink arguments."""
+    """(argument, value) for each string or number inside the sink arguments."""
     names = list(args) if sinks == ALL else [s for s in sinks if s in args]
     return [(name, value) for name in names for value in _leaves(args[name])]
 
@@ -90,7 +88,7 @@ def found_in(value: str, span: Span) -> bool:
 
 
 def normalized(value: str) -> str:
-    """The form values are compared in. Guard events hash this, never store it."""
+    """The compared form. Guard events store its hash, never the value."""
     return _value(value)
 
 

@@ -1,10 +1,10 @@
-"""Run the gateway as a local server that looks like the OpenAI API.
+"""Run the gateway as a local OpenAI-compatible server.
 
     python -m prestige serve --labels banking,slack --muse --policies cache,reason --max-total 20
 
-Same as the cost harness's `serve`, plus the guard. Point any agent at
-`http://127.0.0.1:<port>/s/<conversation-key>/v1` as its OpenAI base URL. Traces and guard events go to
-`--db`. Read cost with `python -m harness profile --db <db> --list`.
+The cost harness's `serve` plus the guard. Point an agent at
+`http://127.0.0.1:<port>/s/<conversation-key>/v1`. Traces and guard events go to `--db`. Cost report:
+`python -m harness profile --db <db> --list`.
 """
 
 from __future__ import annotations

@@ -1,15 +1,10 @@
-"""The gateway: the cost harness's proxy and sessions, with the guard screening every reply.
+"""Gateway: the cost harness's proxy, with the guard on every reply.
 
-`GuardedSession` is a harness `Session` that runs the guard on each reply before the agent sees it. It
-checks the reply against the conversation the model saw: the agent's own history plus any harness tool
-results, before cost policies like masking shorten it. So a value counts as "seen" if it was anywhere
-in what the model could read.
+`GuardedSession` checks each reply against what the model could read: the agent's history plus harness
+tool results, before masking shortens them. Guard events go into the trace database's `guard_events`
+table, next to cost. Each stores a hash and a length, never the value.
 
-Guard events go into the same trace database as the calls, in a `guard_events` table, so they line up
-with cost by run. They hold a hash and a length for each value, never the value.
-
-This leans on the harness's private `Session._send`. That's fine while the harness is pinned to one
-commit.
+It overrides the harness's private `Session._send`. The pinned harness commit keeps that stable.
 """
 
 from __future__ import annotations
@@ -106,7 +101,7 @@ def build_server(
     label: str = "prestige",
     host: str = "127.0.0.1",
 ) -> Server:
-    """Like the harness's `build_server`, with a guarded session per conversation."""
+    """The harness's `build_server`, with a guarded session per conversation."""
     store = TraceStore(db)
     ensure_schema(store)
     budget = Budget(budget_usd) if budget_usd else None

@@ -9,8 +9,8 @@ build/
 # secrets
 .env
 
-# local run data. Traces and benchmark logs contain full prompts, tool outputs and the
-# benchmark's injected text, so none of it is ever committed. Reports are exported as counts only.
+# Run data. Traces and benchmark logs hold full prompts and the benchmark's injected text.
+# Never committed. Reports hold counts only.
 runs/
 *.sqlite
 *.sqlite3

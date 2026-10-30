@@ -1,34 +1,32 @@
 # Prestige
 
-A gateway that sits between an AI agent and the model. It stops the agent from sending money or data
-somewhere that only untrusted content asked for, cuts token cost, and measures both on a public
-benchmark.
+A gateway between an AI agent and its model. It stops tool calls that untrusted content steered, and it
+cuts token cost. Both are measured on a public benchmark.
 
-Status: early. Nothing here has run against a live model yet. The plan is in
-[docs/BUILD_PLAN.md](docs/BUILD_PLAN.md).
+Status: early. Nothing has run against a live model yet. See [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md).
 
-## The cost half already ships
+## Cost engine
 
-The cost engine is [agent-cost-harness](https://github.com/IrwinJam/agent-cost-harness), installed
-here as a pinned dependency. On 40 tau2-bench retail tasks with Muse it cut agent cost 21% (95% CI 17%
-to 25%) with `cache_layout`, and about 37% with low reasoning effort added. Its
-[results](https://github.com/IrwinJam/agent-cost-harness/blob/main/docs/RESULTS.md) have the method and
-the numbers.
+The cost side is [agent-cost-harness](https://github.com/IrwinJam/agent-cost-harness), pinned as a
+dependency. On 40 tau2-bench retail tasks with Muse, `cache_layout` cut agent cost 21% (95% CI 17% to
+25%). Low reasoning effort on top brought the cut to about 37%. Its
+[results](https://github.com/IrwinJam/agent-cost-harness/blob/main/docs/RESULTS.md) have the method.
 
-Prestige adds a guard on the agent's tool calls and an evaluation on AgentDojo's public attack suite.
+Prestige adds a guard on tool calls and an evaluation on AgentDojo.
 
-## No attack text in this repo
+## No attack text
 
-This repo doesn't contain or publish attacks. Attacks come only from
-[AgentDojo](https://github.com/ethz-spylab/agentdojo) (MIT), installed from PyPI at a pinned version.
-Run logs stay in `runs/`, which is never committed. Results are published as counts only.
-`tests/test_public_hygiene.py` checks this before every commit.
+This repo holds no attacks. Attacks come from [AgentDojo](https://github.com/ethz-spylab/agentdojo)
+(MIT), installed from PyPI at a pinned version. Run logs stay in `runs/`, which is never committed.
+Reports hold counts only. `tests/test_public_hygiene.py` checks this before every commit.
 
 ## Setup
 
 ```bash
 python -m venv .venv
-.venv/Scripts/python -m pip install -e ".[dev]"            # Mac or Linux: .venv/bin/python
-.venv/Scripts/python -m pip install -e ".[dev,security]"   # adds AgentDojo
+.venv/Scripts/python -m pip install -e ".[dev,security]"   # Mac or Linux: .venv/bin/python
 .venv/Scripts/python -m pytest
+.venv/Scripts/python -m prestige.eval.replay --suites banking --user-tasks user_task_0 --injection-tasks injection_task_0
 ```
+
+The last line replays one AgentDojo pair offline, with the guard off and on. It spends nothing.
