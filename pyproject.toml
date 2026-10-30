@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "prestige"
+version = "0.1.0"
+description = "A gateway for AI agents that blocks hijacked tool calls, cuts token cost, and measures both."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    # The cost engine, pinned to the published version the cost results came from.
+    "agent-cost-harness @ git+https://github.com/IrwinJam/agent-cost-harness@576fe5e5dae738b53e84e37fea7532fda544501c",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+# Public attack benchmark. Installed, never copied into this repo.
+security = ["agentdojo==0.1.35"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["prestige"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
