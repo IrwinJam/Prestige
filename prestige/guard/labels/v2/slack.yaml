@@ -1,12 +1,17 @@
 # Tool labels, AgentDojo v1.2.2 Slack suite.
 # Written Oct 29 2026 from the tool definitions only, before any run and before reading the
 # injection tasks. Fields are explained in banking.yaml.
+#
+# v2, Oct 29 2026: `get_channels` output is untrusted. Any workspace member can name a channel, so a
+# channel name is text an outsider can write. The v1 replay found an injection carried in a channel
+# name that the v1 label let through. Nothing else changed.
 
 default: { impact: state, sinks: "*" }
 
 tools:
-  # Directory listings. The v1 assumption: outsiders don't write these names.
-  get_channels: { impact: read, trusted_output: true }
+  # Channel names are written by any workspace member.
+  get_channels: { impact: read }
+  # Member listing. Kept trusted in v2.
   get_users_in_channel: { impact: read, trusted_output: true }
   # Message text and web pages are written by other people.
   read_channel_messages: { impact: read }

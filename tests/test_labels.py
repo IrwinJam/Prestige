@@ -12,7 +12,7 @@ def write(tmp_path, name, text):
 def test_bundled_labels_load_and_merge():
     labels = Labels.load("banking", "slack")
     assert labels.get("send_money") == ToolLabel("boundary", ("recipient",))
-    assert labels.get("get_channels").trusted_output
+    assert labels.get("get_users_in_channel").trusted_output
     assert labels.get("not_a_tool") == ToolLabel("state", ALL)
 
 
@@ -48,6 +48,13 @@ def test_unknown_names_are_rejected():
 def test_versions_load_by_suffix_and_latest_is_default():
     assert Labels.load("banking") == Labels.load(f"banking@{LATEST}")
     assert Labels.load("banking@v1").get("send_money") == ToolLabel("boundary", ("recipient",))
+
+
+def test_v2_only_untrusts_channel_names():
+    v1, v2 = Labels.load("slack@v1"), Labels.load("slack@v2")
+    assert v1.get("get_channels").trusted_output and not v2.get("get_channels").trusted_output
+    assert {n: t for n, t in v1.tools.items() if n != "get_channels"} == {n: t for n, t in v2.tools.items() if n != "get_channels"}
+    assert Labels.load("banking@v1") == Labels.load("banking@v2")
 
 
 @pytest.mark.parametrize("version", VERSIONS)
