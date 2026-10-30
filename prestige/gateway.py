@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS guard_events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     run_id TEXT NOT NULL,
     call_seq INTEGER,
+    call_id TEXT,
     created_at TEXT NOT NULL,
     rule TEXT NOT NULL,
     action TEXT NOT NULL,
@@ -77,13 +78,13 @@ class GuardedSession(Session):
             db = self.store.connection
             seq = db.execute("SELECT max(seq) FROM calls WHERE run_id = ?", (self.run_id,)).fetchone()[0]
             rows = [
-                (self.run_id, seq, now, f.rule, "blocked" if f.blocked else "flagged", f.tool, f.arg, f.value_hash, f.value_len, f.source, f.source_index)
+                (self.run_id, seq, f.call_id, now, f.rule, "blocked" if f.blocked else "flagged", f.tool, f.arg, f.value_hash, f.value_len, f.source, f.source_index)
                 for f in findings
             ]
             with db:
                 db.executemany(
-                    "INSERT INTO guard_events (run_id, call_seq, created_at, rule, action, tool, arg, value_hash, value_len, source, source_index)"
-                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO guard_events (run_id, call_seq, call_id, created_at, rule, action, tool, arg, value_hash, value_len, source, source_index)"
+                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     rows,
                 )
 
