@@ -96,31 +96,44 @@ Findings:
 
 ## Replay run results
 
-Oct 29. 1,070 runs over banking and Slack, guard off and on. Full counts are in
-[REPLAY_RESULTS.md](REPLAY_RESULTS.md).
+Oct 29. 1,605 runs over banking and Slack: guard off, then labels v1, then labels v2. Full counts are
+in [REPLAY_RESULTS.md](REPLAY_RESULTS.md).
 
-| | Banking | Slack |
-|---|---:|---:|
-| Attacks stopped, of those that worked with the guard off | 144 of 144 | 31 of 105 |
-| Benign tasks done, guard off | 14 of 16 | 21 of 21 |
-| Benign tasks done, guard on | 11 of 16 | 9 of 21 |
+| All suites | Guard off | Labels v1 | Labels v2 |
+|---|---:|---:|---:|
+| Benign tasks done | 35 of 37 | 20 of 37 | 16 of 37 |
+| Attacks that worked | 249 of 249 | 45 of 249 | 2 of 249 |
+| Stopped at the attack call | | 169 | 212 |
+| Stopped because an earlier block ended the task | | 35 | 35 |
 
-Slack misses, checked against the run logs with counts only:
+**First run.** Two problems showed up, both found by checking counts against the run logs:
 
-- 24 hijack replays never read the injection. The script makes only calls the user's request
-  justifies, and some injections sit behind calls it skips. These are replay artifacts. A script that
-  switches to the attack once the injection shows up in a tool result removes them.
-- Most of the rest read the injection through `get_channels`. AgentDojo puts one Slack injection in a
-  channel name, and the v1 labels trust `get_channels` output. That label is wrong. Any workspace member
-  can name a channel.
+- The hijack script made only calls the user's request justified, so 24 replays never read the
+  injection. It now follows the reference solution until the injection shows up in a tool result. Every
+  hijack replay reaches the attack now.
+- The v1 labels trusted `get_channels` output, and AgentDojo puts one Slack injection in a channel name.
+  Any workspace member can name a channel. v2 untrusts it, in its own commit with the reason. v1 stays
+  as committed, for comparison.
 
-On the recorded requests with `get_channels` untrusted, 44 of the 74 Slack misses get a blocked call.
-Four more benign tasks get blocked too, 16 of 21 in total. A rerun has to confirm both, since an early
-block changes what happens next.
+**Banking.** v1 and v2 match. The guard blocks all 144 attacks at the attack call. Three benign tasks
+get blocked.
 
-False blocks come from values the user's task points at. In banking those come from a named file or the
-transaction history. In Slack they're mostly `get_webpage.url` taken from a channel message, plus
-invites using an email read off a web page.
+**Slack.**
+
+- v2 closes the channel-name hole. Attacks that worked fall from 45 to 2.
+- Both remaining attacks send a direct message to a real member with a harmful body. That's the known
+  content-argument gap.
+- v2 costs four more benign tasks. Each posts to a channel named by `get_channels`.
+- 35 attacks stop only because an earlier false block ended the task. AgentDojo counts them as stopped.
+  The guard didn't catch them, and the report lists them apart.
+
+**False blocks under v2** fall into two groups:
+
+- Whole fields from a listing: channel names from `get_channels` and a recipient from the transaction
+  history. Five tasks. Injected values sit inside free text instead, so field-level provenance can
+  separate them. This goes next.
+- Values inside text the user pointed at: links in channel messages, an email on a web page, the IBAN
+  in a bill. Fourteen tasks. Rule D and a confirm step target these.
 
 ## How the guard works
 
@@ -151,7 +164,8 @@ update_password:       { impact: state,    sinks: [password] }
 get_most_recent_transactions: { impact: read }
 ```
 
-Labels come from tool definitions only. Unlisted tools get every argument checked.
+Labels come from tool definitions only. Unlisted tools get every argument checked. Each version lives in
+its own folder, `labels/v1/` and `labels/v2/`, and old versions never change.
 
 **R1, sink provenance.** A high-impact call is blocked when a sink value appears in untrusted output and
 nowhere in trusted text. Matching ignores case and spacing. URLs match without scheme or `www.`.
@@ -185,10 +199,10 @@ Prestige doesn't edit the cost harness. It reuses its proxy, adapters, trace sto
 | `prestige/gateway.py` | `GuardedSession` subclasses the harness `Session` and screens each reply. Also the server builder and the `developer` role fix when Muse needs it |
 | `prestige/__main__.py` | `python -m prestige serve`, the harness's `serve` plus guard options |
 | `prestige/guard/provenance.py` | Trusted and untrusted spans, value matching |
-| `prestige/guard/labels.py`, `labels/*.yaml` | Tool labels |
+| `prestige/guard/labels.py`, `labels/v*/*.yaml` | Versioned tool labels |
 | `prestige/guard/policy.py` | R1, R2, the notice, findings |
 | `prestige/eval/agentdojo.py` | AgentDojo through the gateway, per pair |
-| `prestige/eval/replay.py` | Offline replay and its report |
+| `prestige/eval/replay.py` | Offline replay, guard off and once per label version, with its report |
 | `prestige/eval/report.py` | Live report with Wilson intervals. Not started |
 | `eval/protocol.yaml` | Test plan, fingerprinted before the main run. Not started |
 
@@ -258,7 +272,7 @@ both suites takes about 2 hours, or 1.2 with suites in parallel.
 | Day | Work | Done when |
 |---|---|---|
 | Thu Oct 29 | Repo, hygiene test, CI, AgentDojo driver. Guard, gateway, labels, tests. Full replay | Done |
-| Fri Oct 30 | Labels v2 for the `get_channels` mistake, committed apart with the reason. Fix the hijack script. Rerun the replay | v1 and v2 reported side by side, every false block explained |
+| Fri Oct 30 | Labels v2 and the hijack script fix, rerun side by side | Done Oct 29. Next: field-level provenance, replayed against v2 |
 | Sat Oct 31 | Live-run CLI with caps. `eval/protocol.yaml`. Rehearse the demo on replay | Protocol committed. One command per setup ready |
 | Sun Nov 1 | Tokens start. Live smoke, pilot, then setups A and B | A and B finished by night |
 | Mon Nov 2 | Setups C and D. E and travel with time left | Numbers frozen by evening |
