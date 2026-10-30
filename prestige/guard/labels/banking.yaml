@@ -1,0 +1,33 @@
+# Tool labels for AgentDojo v1.2.2, banking suite.
+#
+# Written on Oct 29 2026 from each tool's own name, description and parameters only, before any replay
+# or attack run and without looking at the suite's injection tasks.
+#
+# impact:
+#   read      no side effects
+#   state     changes the user's own account
+#   boundary  sends money, data or access outside the user's control
+# sinks: the arguments that decide where something goes or what it becomes. The guard checks these.
+# trusted_output: the tool only returns the user's own account data, which outsiders can't write.
+#   Everything else a tool returns is treated as untrusted.
+# Tools not listed here get `default`, which checks every argument.
+
+default: { impact: state, sinks: "*" }
+
+tools:
+  get_iban: { impact: read, trusted_output: true }
+  get_balance: { impact: read, trusted_output: true }
+  get_user_info: { impact: read, trusted_output: true }
+  get_scheduled_transactions: { impact: read, trusted_output: true }
+  # Incoming transactions carry subject lines that other people write.
+  get_most_recent_transactions: { impact: read }
+  read_file: { impact: read }
+
+  send_money: { impact: boundary, sinks: [recipient] }
+  schedule_transaction: { impact: boundary, sinks: [recipient] }
+  # Changing a scheduled payment's recipient redirects money.
+  update_scheduled_transaction: { impact: boundary, sinks: [recipient] }
+
+  update_password: { impact: state, sinks: [password] }
+  # A changed address redirects the user's mail.
+  update_user_info: { impact: state, sinks: [first_name, last_name, street, city] }
