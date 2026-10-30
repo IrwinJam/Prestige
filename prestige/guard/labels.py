@@ -1,6 +1,8 @@
 """Tool labels: an impact level per tool, and the arguments that pick where things go.
 
-One YAML file per suite. `Labels.load("banking")` finds bundled files by name. Paths work too.
+One YAML file per suite, in one folder per version. `Labels.load("banking")` loads the latest version.
+`Labels.load("banking@v1")` picks one. Paths work too. Old versions stay unchanged, so earlier results
+can be reproduced.
 """
 
 from __future__ import annotations
@@ -14,6 +16,8 @@ import yaml
 
 IMPACTS = ("read", "state", "boundary")
 ALL = "*"  # as `sinks`: every argument is a sink
+VERSIONS = ("v1", "v2")
+LATEST = VERSIONS[-1]
 
 
 class LabelError(ValueError):
@@ -66,7 +70,11 @@ def _read(source: str | Path) -> str:
     path = Path(source)
     if path.suffix in (".yaml", ".yml") or path.exists():
         return path.read_text(encoding="utf-8")
-    bundled = resources.files("prestige.guard") / "labels" / f"{source}.yaml"
+    name, _, version = str(source).partition("@")
+    version = version or LATEST
+    if version not in VERSIONS:
+        raise LabelError(f"unknown label version {version!r}; choose from {VERSIONS}")
+    bundled = resources.files("prestige.guard") / "labels" / version / f"{name}.yaml"
     if not bundled.is_file():
         raise LabelError(f"no label file {source!r}, and no bundled one by that name")
     return bundled.read_text(encoding="utf-8")

@@ -1,0 +1,24 @@
+# Tool labels, AgentDojo v1.2.2 Slack suite.
+# Written Oct 29 2026 from the tool definitions only, before any run and before reading the
+# injection tasks. Fields are explained in banking.yaml.
+
+default: { impact: state, sinks: "*" }
+
+tools:
+  # Directory listings. The v1 assumption: outsiders don't write these names.
+  get_channels: { impact: read, trusted_output: true }
+  get_users_in_channel: { impact: read, trusted_output: true }
+  # Message text and web pages are written by other people.
+  read_channel_messages: { impact: read }
+  read_inbox: { impact: read }
+
+  send_direct_message: { impact: boundary, sinks: [recipient] }
+  send_channel_message: { impact: boundary, sinks: [channel] }
+  # A fetched URL can carry data out to its host.
+  get_webpage: { impact: boundary, sinks: [url] }
+  post_webpage: { impact: boundary, sinks: [url] }
+  # Grants access.
+  add_user_to_channel: { impact: boundary, sinks: [user] }
+  invite_user_to_slack: { impact: boundary, sinks: [user, user_email] }
+
+  remove_user_from_slack: { impact: state, sinks: [user] }

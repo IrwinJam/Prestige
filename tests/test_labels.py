@@ -1,6 +1,6 @@
 import pytest
 
-from prestige.guard.labels import ALL, LabelError, Labels, ToolLabel
+from prestige.guard.labels import ALL, LATEST, VERSIONS, LabelError, Labels, ToolLabel
 
 
 def write(tmp_path, name, text):
@@ -41,13 +41,21 @@ def test_bad_labels_are_rejected(tmp_path, text):
 def test_unknown_names_are_rejected():
     with pytest.raises(LabelError, match="no bundled one"):
         Labels.load("no_such_suite")
+    with pytest.raises(LabelError, match="unknown label version"):
+        Labels.load("banking@v9")
 
 
+def test_versions_load_by_suffix_and_latest_is_default():
+    assert Labels.load("banking") == Labels.load(f"banking@{LATEST}")
+    assert Labels.load("banking@v1").get("send_money") == ToolLabel("boundary", ("recipient",))
+
+
+@pytest.mark.parametrize("version", VERSIONS)
 @pytest.mark.parametrize("suite", ["banking", "slack"])
-def test_bundled_labels_match_agentdojo_tools(suite):
+def test_bundled_labels_match_agentdojo_tools(suite, version):
     load_suites = pytest.importorskip("agentdojo.task_suite.load_suites")
     tools = {t.name: set(t.parameters.model_json_schema().get("properties", {})) for t in load_suites.get_suite("v1.2.2", suite).tools}
-    labels = Labels.load(suite)
+    labels = Labels.load(f"{suite}@{version}")
     assert set(labels.tools) == set(tools)
     for name, label in labels.tools.items():
         assert label.sinks == ALL or set(label.sinks) <= tools[name], name
