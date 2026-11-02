@@ -1,6 +1,6 @@
 # Tool labels, AgentDojo v1.2.2 Slack suite.
-# Written Oct 29 2026 from the tool definitions only, before any run and before reading the
-# injection tasks. Fields are explained in banking.yaml.
+# Written Oct 29 2026 from the tool definitions, before any replay over the suites and before any guard run.
+# A smoke test had already shown one banking injection task (injection_task_0). No Slack injection task had been read. Fields are explained in banking.yaml.
 #
 # v2, Oct 29 2026: `get_channels` output is untrusted. Any workspace member can name a channel, so a
 # channel name is text an outsider can write. The v1 replay found an injection carried in a channel

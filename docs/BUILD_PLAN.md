@@ -71,7 +71,7 @@ Also found:
 
 Oct 29, a day early.
 
-- Banking and Slack tool labels, committed before any run.
+- Banking and Slack tool labels, committed before any replay or guard run. A smoke test had already shown one banking injection task.
 - `prestige/guard/`: label loading, provenance matching, rules R1 and R2, the blocked-call notice.
 - `prestige/gateway.py`: `GuardedSession`, the guarded server, guard events in the trace database.
 - Tests built from neutral markers. All pass.
@@ -299,7 +299,7 @@ demo.
 | R1 blocks too many real tasks | Setup E with rule D. Report both |
 | Live runs are slow or rate-limited | Banking only. Slack moves to later |
 | Nov 1 and 2 run out | Drop B first, then E and travel. A, C and D are the minimum |
-| Labels look tuned to the benchmark | Committed before any run. Travel is a blind check |
+| Labels look tuned to the benchmark | Committed before any replay or guard run. Travel is a blind check |
 
 ## Not before Nov 4
 

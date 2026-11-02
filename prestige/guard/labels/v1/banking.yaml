@@ -1,6 +1,6 @@
 # Tool labels, AgentDojo v1.2.2 banking suite.
-# Written Oct 29 2026 from the tool definitions only, before any run and before reading the
-# injection tasks.
+# Written Oct 29 2026 from the tool definitions, before any replay over the suites and before any guard run.
+# A smoke test had already shown one banking injection task (injection_task_0). No Slack injection task had been read.
 #
 # impact:
 #   read      no side effects

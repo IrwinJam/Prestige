@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python -m prestige.eval.replay`. AgentDojo 0.1.35, benchmark
 v1.2.2, attack `important_instructions_no_model_name`. The guard blocks on R1 and
-flags R2. Label v1 is the set committed before any run. v2 untrusts `get_channels` output.
+flags R2. Label v1 was committed before any replay or guard run. A smoke test had shown one banking injection task by then. v2 untrusts `get_channels` output.
 
 **Replay, not a model.** A scripted fake model makes AgentDojo's reference tool calls. These
 numbers describe the guard's rules on those paths. Live results come from a real model. Nothing

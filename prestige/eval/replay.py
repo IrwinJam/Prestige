@@ -218,7 +218,7 @@ def render(outcomes: list[Outcome], when: str) -> str:
         "",
         f"Generated {when} by `python -m prestige.eval.replay`. AgentDojo {_version()}, benchmark",
         f"{BENCHMARK_VERSION}, attack `important_instructions_no_model_name`. The guard blocks on R1 and",
-        "flags R2. Label v1 is the set committed before any run. v2 untrusts `get_channels` output.",
+        "flags R2. Label v1 was committed before any replay or guard run. A smoke test had shown one banking injection task by then. v2 untrusts `get_channels` output.",
         "",
         "**Replay, not a model.** A scripted fake model makes AgentDojo's reference tool calls. These",
         "numbers describe the guard's rules on those paths. Live results come from a real model. Nothing",
