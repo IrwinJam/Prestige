@@ -30,3 +30,16 @@ python -m venv .venv
 ```
 
 The last line replays one AgentDojo pair offline, with the guard off and on. It spends nothing.
+
+## Live runs
+
+The test plan is [eval/protocol.yaml](eval/protocol.yaml). A run needs a spend cap and picks up where it
+stopped when you run it again.
+
+```bash
+.venv/Scripts/python -m prestige.eval.live --simulate --max-total 1 --setups A,C,D,E --suites banking --user-tasks user_task_0 --injection-tasks injection_task_0
+.venv/Scripts/python -m prestige.eval.live_report --name smoke
+```
+
+`--simulate` uses a scripted fake model and spends nothing. Leave it out to use Muse. Add
+`--provider baseten` for Muse Spark Open on Baseten.

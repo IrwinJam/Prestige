@@ -16,7 +16,8 @@ import yaml
 
 IMPACTS = ("read", "state", "boundary")
 ALL = "*"  # as `sinks`: every argument is a sink
-VERSIONS = ("v1", "v2")
+VERSIONS = ("v1", "v2", "v3")
+FIELD_FORMS = ("items", "lines")  # as `fields`, besides a list of field names
 LATEST = VERSIONS[-1]
 
 
@@ -29,6 +30,7 @@ class ToolLabel:
     impact: str
     sinks: tuple[str, ...] | str = ()
     trusted_output: bool = False
+    fields: tuple[str, ...] | str = ()  # whole values in untrusted output that count as trusted
 
     @property
     def high_impact(self) -> bool:
@@ -81,8 +83,8 @@ def _read(source: str | Path) -> str:
 
 
 def _label(where: str, raw: Any) -> ToolLabel:
-    if not isinstance(raw, dict) or set(raw) - {"impact", "sinks", "trusted_output"}:
-        raise LabelError(f"{where}: expected `impact`, and optionally `sinks` and `trusted_output`")
+    if not isinstance(raw, dict) or set(raw) - {"impact", "sinks", "trusted_output", "fields"}:
+        raise LabelError(f"{where}: expected `impact`, and optionally `sinks`, `trusted_output` and `fields`")
     impact = raw.get("impact")
     if impact not in IMPACTS:
         raise LabelError(f"{where}: impact must be one of {IMPACTS}, got {impact!r}")
@@ -93,4 +95,9 @@ def _label(where: str, raw: Any) -> ToolLabel:
         sinks = tuple(sinks)
     if impact == "read" and sinks:
         raise LabelError(f"{where}: read tools can't have sinks")
-    return ToolLabel(impact, sinks, bool(raw.get("trusted_output", False)))
+    fields = raw.get("fields", ())
+    if fields not in FIELD_FORMS:
+        if not isinstance(fields, list | tuple) or not all(isinstance(f, str) for f in fields):
+            raise LabelError(f"{where}: fields must be a list of field names or one of {FIELD_FORMS}")
+        fields = tuple(fields)
+    return ToolLabel(impact, sinks, bool(raw.get("trusted_output", False)), fields)

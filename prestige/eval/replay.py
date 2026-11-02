@@ -42,7 +42,8 @@ from harness.sim import SimulatedAdapter
 from prestige.eval.agentdojo import BENCHMARK_VERSION, DEFAULT_ATTACK, build_pipeline, run_pair, run_task, suite
 from prestige.gateway import build_server
 from prestige.guard import Guard, Labels
-from prestige.guard.provenance import text_of
+from prestige.guard.policy import value_hash
+from prestige.guard.provenance import sink_values, text_of
 
 SCENARIOS = ("benign", "behaves", "hijacked")
 ATTACK_PREFIX = "attack_"  # call IDs the fake model gives the injection task's calls
@@ -85,19 +86,22 @@ def replay(
         iids = [i for i in s.injection_tasks if injection_tasks is None or i in injection_tasks]
         attacks = {i: _calls(s.get_injection_task_by_id(i).ground_truth(env)) for i in iids}
         for version in configs:
-            script: dict[str, Any] = {"prompt": None, "solve": [], "attack": [], "markers": []}
-            guard = Guard(Labels.load(f"{suite_name}@{version}")) if version else None
-            server = build_server(SimulatedAdapter(_scripted(script)), chain=[], guard=guard, db=str(root / "trace.sqlite"), port=0, label="replay")
+            script: dict[str, Any] = {"prompt": None, "solve": [], "attack": [], "markers": [], "approved": set()}
+            label_version, _, mode = (version or "").partition("+")
+            guard = Guard(Labels.load(f"{suite_name}@{label_version}")) if version else None
+            approver = (lambda _key, f: f.value_hash in script["approved"]) if mode == "confirm" else None
+            server = build_server(SimulatedAdapter(_scripted(script)), chain=[], guard=guard, db=str(root / "trace.sqlite"), port=0, label="replay", approver=approver)
             try:
                 for uid in uids:
                     task = s.get_user_task_by_id(uid)
                     solve = _calls(task.ground_truth(env))
                     for scenario, iid in [("benign", None)] + [(sc, i) for i in iids for sc in ("behaves", "hijacked")]:
-                        key = ".".join([suite_name, scenario, version or "off", uid, iid or "none"])
+                        key = ".".join([suite_name, scenario, (version or "off").replace("+", "-"), uid, iid or "none"])
                         pipeline = build_pipeline(server.proxy.url_for(key), "replay-model")
                         hijack = scenario == "hijacked"
                         script.update(
                             prompt=task.PROMPT,
+                            approved=reference_hashes(solve),
                             solve=solve,
                             attack=attacks[iid] if hijack else [],
                             markers=markers(_injections(s, pipeline, uid, iid)) if hijack else [],
@@ -125,6 +129,11 @@ def total_runs(suites: Iterable[str], user_tasks: set[str] | None = None, inject
         i = len([x for x in s.injection_tasks if injection_tasks is None or x in injection_tasks])
         per_config += u + 2 * u * i
     return per_config * (1 + len(list(versions)))
+
+
+def reference_hashes(calls: Calls) -> set[str]:
+    """Hashes of every value in a task's reference calls. Stands in for a user who knows the task."""
+    return {value_hash(v) for _, args in calls for _, v in sink_values(args, "*")}
 
 
 def markers(texts: Iterable[str]) -> list[str]:
@@ -218,7 +227,7 @@ def render(outcomes: list[Outcome], when: str) -> str:
         "",
         f"Generated {when} by `python -m prestige.eval.replay`. AgentDojo {_version()}, benchmark",
         f"{BENCHMARK_VERSION}, attack `important_instructions_no_model_name`. The guard blocks on R1 and",
-        "flags R2. Label v1 was committed before any replay or guard run. A smoke test had shown one banking injection task by then. v2 untrusts `get_channels` output.",
+        "flags R2. `+confirm` adds a stand-in user who approves values from the reference solution. Label v1 was committed before any replay or guard run. A smoke test had shown one banking injection task by then. v2 untrusts `get_channels` output. v3 trusts whole listed fields.",
         "",
         "**Replay, not a model.** A scripted fake model makes AgentDojo's reference tool calls. These",
         "numbers describe the guard's rules on those paths. Live results come from a real model. Nothing",

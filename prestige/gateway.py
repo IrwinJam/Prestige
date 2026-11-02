@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import copy
 import datetime as dt
+from collections.abc import Callable
 from typing import Any
 
 from harness.adapters.base import Adapter
@@ -25,6 +26,8 @@ from harness.trace import TraceStore
 from harness.usage import Protocol
 
 from prestige.guard import Finding, Guard
+
+SessionApprover = Callable[[str, Finding], bool]  # conversation key, finding
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS guard_events (
@@ -51,9 +54,11 @@ def ensure_schema(store: TraceStore) -> None:
 
 
 class GuardedSession(Session):
-    def __init__(self, adapter: Adapter, *, guard: Guard | None = None, **kwargs: Any):
+    def __init__(self, adapter: Adapter, *, guard: Guard | None = None, approver: SessionApprover | None = None, key: str = "", **kwargs: Any):
         super().__init__(adapter, **kwargs)
         self.guard = guard
+        self.approver = approver
+        self.key = key
         self.findings: list[Finding] = []
         if self.store is not None:
             ensure_schema(self.store)
@@ -64,7 +69,8 @@ class GuardedSession(Session):
             return response
         seen = copy.deepcopy(agent_request)
         conv.items(protocol, seen)[:] = self._with_injections(agent_items)
-        response, findings = self.guard.screen(protocol, seen, response, skip=self.ctx.harness_tools)
+        approve = (lambda f: self.approver(self.key, f)) if self.approver else None
+        response, findings = self.guard.screen(protocol, seen, response, skip=self.ctx.harness_tools, approve=approve)
         if findings:
             self.findings.extend(findings)
             self._record(findings)
@@ -78,7 +84,7 @@ class GuardedSession(Session):
             db = self.store.connection
             seq = db.execute("SELECT max(seq) FROM calls WHERE run_id = ?", (self.run_id,)).fetchone()[0]
             rows = [
-                (self.run_id, seq, f.call_id, now, f.rule, "blocked" if f.blocked else "flagged", f.tool, f.arg, f.value_hash, f.value_len, f.source, f.source_index)
+                (self.run_id, seq, f.call_id, now, f.rule, "blocked" if f.blocked else "confirmed" if f.confirmed else "flagged", f.tool, f.arg, f.value_hash, f.value_len, f.source, f.source_index)
                 for f in findings
             ]
             with db:
@@ -101,6 +107,7 @@ def build_server(
     prices: PriceTable | None = None,
     label: str = "prestige",
     host: str = "127.0.0.1",
+    approver: SessionApprover | None = None,
 ) -> Server:
     """The harness's `build_server`, with a guarded session per conversation."""
     store = TraceStore(db)
@@ -114,7 +121,7 @@ def build_server(
         meta = {"serve": True, "key": key, "policies": [n for n, _ in chain], "guard": guard_meta}
         run_id = store.start_run(f"{label}/{key}", meta)
         return GuardedSession(
-            adapter, guard=guard, task_id=key, policies=policies, store=store, run_id=run_id, prices=prices, budget=budget, limit=limit
+            adapter, guard=guard, approver=approver, key=key, task_id=key, policies=policies, store=store, run_id=run_id, prices=prices, budget=budget, limit=limit
         )
 
     return Server(ProxyServer(new_session, host=host, port=port).start(), store, budget, chain)

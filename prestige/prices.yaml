@@ -1,0 +1,21 @@
+# USD per 1M tokens. Reasoning tokens bill at the output rate. Not yet checked against a real bill.
+
+example:
+  source: made-up prices for the simulator
+  models:
+    example-model:
+      - {effective_from: 2026-01-01, input: 1.00, cached_input: 0.10, output: 4.00, verified: false}
+
+meta:
+  source: https://dev.meta.ai/docs/
+  models:
+    muse-spark-1.3:
+      - {effective_from: 2026-07-09, input: 1.25, cached_input: 0.15, output: 4.25, verified: false}
+    muse-wonder-1.0:
+      - {effective_from: 2026-10-12, input: 4.00, cached_input: 0.20, output: 20.00, verified: false}
+
+baseten:
+  source: https://www.baseten.co/pricing
+  models:
+    meta-models/muse-spark-open-1026:
+      - {effective_from: 2026-10-26, input: 1.25, cached_input: 0.15, output: 4.25, verified: false}

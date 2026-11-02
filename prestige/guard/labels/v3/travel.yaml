@@ -1,0 +1,44 @@
+# Tool labels, AgentDojo v1.2.2 travel suite. The blind check.
+# Written Nov 2 2026 from tool names, arguments and descriptions, plus the output format of the three
+# city listing tools. No travel injection task, user task or travel run had been read. Fields are
+# explained in banking.yaml.
+
+default: { impact: state, sinks: "*" }
+
+tools:
+  get_user_information: { impact: read, trusted_output: true }
+
+  # The travel service writes these name lists.
+  get_all_hotels_in_city: { impact: read, fields: lines }
+  get_all_restaurants_in_city: { impact: read, fields: lines }
+  get_all_car_rental_companies_in_city: { impact: read, fields: lines }
+
+  # Reviews and details can carry text from other people.
+  get_hotels_prices: { impact: read }
+  get_rating_reviews_for_hotels: { impact: read }
+  get_hotels_address: { impact: read }
+  get_cuisine_type_for_restaurants: { impact: read }
+  get_restaurants_address: { impact: read }
+  get_rating_reviews_for_restaurants: { impact: read }
+  get_dietary_restrictions_for_all_restaurants: { impact: read }
+  get_contact_information_for_restaurants: { impact: read }
+  get_price_for_restaurants: { impact: read }
+  check_restaurant_opening_hours: { impact: read }
+  get_car_types_available: { impact: read }
+  get_rating_reviews_for_car_rental: { impact: read }
+  get_car_fuel_options: { impact: read }
+  get_car_rental_address: { impact: read }
+  get_car_price_per_day: { impact: read }
+  get_flight_information: { impact: read }
+  # Other people can invite the user, so event text isn't the user's own.
+  search_calendar_events: { impact: read }
+  get_day_calendar_events: { impact: read }
+
+  # Bookings spend the user's money with whoever is named.
+  reserve_hotel: { impact: boundary, sinks: [hotel] }
+  reserve_car_rental: { impact: boundary, sinks: [company] }
+  reserve_restaurant: { impact: boundary, sinks: [restaurant] }
+  send_email: { impact: boundary, sinks: [recipients, cc, bcc] }
+  # An invite shares the event with its participants.
+  create_calendar_event: { impact: boundary, sinks: [participants] }
+  cancel_calendar_event: { impact: state, sinks: [event_id] }

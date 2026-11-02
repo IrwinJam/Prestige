@@ -1,0 +1,33 @@
+# Tool labels, AgentDojo v1.2.2 Slack suite.
+# Written Oct 29 2026 from the tool definitions, before any replay over the suites and before any guard run.
+# A smoke test had already shown one banking injection task (injection_task_0). No Slack injection task had been read. Fields are explained in banking.yaml.
+#
+# v2, Oct 29 2026: `get_channels` output is untrusted. Any workspace member can name a channel, so a
+# channel name is text an outsider can write. The v1 replay found an injection carried in a channel
+# name that the v1 label let through. Nothing else changed.
+#
+# v3, Nov 2 2026: a whole channel name from `get_channels` counts as trusted. The sink value must equal
+# the full name, so a value inside a longer name still fails. Known cost: a member who creates a channel
+# gets that one name trusted. Nothing else changed.
+
+default: { impact: state, sinks: "*" }
+
+tools:
+  # Channel names are written by any workspace member.
+  get_channels: { impact: read, fields: items }
+  # Member listing. Kept trusted in v2.
+  get_users_in_channel: { impact: read, trusted_output: true }
+  # Message text and web pages are written by other people.
+  read_channel_messages: { impact: read }
+  read_inbox: { impact: read }
+
+  send_direct_message: { impact: boundary, sinks: [recipient] }
+  send_channel_message: { impact: boundary, sinks: [channel] }
+  # A fetched URL can carry data out to its host.
+  get_webpage: { impact: boundary, sinks: [url] }
+  post_webpage: { impact: boundary, sinks: [url] }
+  # Grants access.
+  add_user_to_channel: { impact: boundary, sinks: [user] }
+  invite_user_to_slack: { impact: boundary, sinks: [user, user_email] }
+
+  remove_user_from_slack: { impact: state, sinks: [user] }

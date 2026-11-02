@@ -3,6 +3,10 @@
 R1, sink provenance: a sink value appears in untrusted tool output and nowhere in trusted text.
 R2, tool named by content: untrusted output names the tool and trusted text doesn't. Flagged by default.
 
+A person can approve a call the rule would block. `approve` gets the finding, which carries a hash and
+no value. Without it, every R1 hit blocks. A user who names the value in a message gets the same
+result, since that puts the value in trusted text.
+
 A blocked call leaves the reply before the agent sees it. A short notice takes its place. The notice
 names the call and the source, never the value, which may be attacker text. Findings store a hash and
 a length.
@@ -12,8 +16,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Iterable
-from dataclasses import dataclass
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass, replace
 from typing import Any
 
 from harness.policies import conv
@@ -24,6 +28,7 @@ from prestige.guard.labels import Labels
 from prestige.guard.provenance import Span
 
 RULES = ("R1", "R2")
+Approver = Callable[["Finding"], bool]
 
 
 @dataclass(frozen=True)
@@ -37,6 +42,7 @@ class Finding:
     source: str  # tool whose output held the value or the tool name
     source_index: int
     blocked: bool
+    confirmed: bool = False  # a person approved it, so it went through
 
 
 class Guard:
@@ -76,9 +82,11 @@ class Guard:
                     findings.append(Finding("R2", call.name, call.call_id, None, None, None, source.source, source.index, "R2" in self.block))
         return findings
 
-    def screen(self, protocol: Protocol, request: dict[str, Any], response: dict[str, Any], skip: Iterable[str] = ()) -> tuple[dict[str, Any], list[Finding]]:
+    def screen(self, protocol: Protocol, request: dict[str, Any], response: dict[str, Any], skip: Iterable[str] = (), approve: Approver | None = None) -> tuple[dict[str, Any], list[Finding]]:
         """The reply the agent should see, with blocked calls removed, plus findings."""
         findings = self.check(protocol, request, response, skip)
+        if approve:
+            findings = [replace(f, blocked=False, confirmed=True) if f.blocked and approve(f) else f for f in findings]
         blocked = [f for f in findings if f.blocked]
         if not blocked:
             return response, findings
@@ -115,6 +123,11 @@ def _first(value: str, spans: list[Span]) -> Span | None:
 def _first_name(tool: str, spans: list[Span]) -> Span | None:
     variants = {tool, tool.replace("_", " ")}
     return next((s for s in spans if any(provenance.found_in(v, s) for v in variants)), None)
+
+
+def value_hash(value: str) -> str:
+    """The hash a finding carries for this raw value."""
+    return _hash(provenance.normalized(value))
 
 
 def _hash(value: str) -> str:
