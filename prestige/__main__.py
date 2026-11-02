@@ -14,6 +14,7 @@ import os
 import signal
 import sys
 import threading
+from pathlib import Path
 
 from harness.adapters.base import Adapter
 from harness.budget import SpendLimit
@@ -24,8 +25,20 @@ from prestige.guard import Guard, Labels
 from prestige.guard.labels import LabelError
 
 
+def load_env(path: str | Path = ".env") -> None:
+    """Read KEY=VALUE lines into the environment. Anything already set wins."""
+    path = Path(path)
+    if not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        name, sep, value = line.strip().partition("=")
+        if sep and name.strip() and not name.startswith("#"):
+            os.environ.setdefault(name.strip(), value.strip().strip("'\""))
+
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="python -m prestige", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    load_env()
+    parser = argparse.ArgumentParser(prog="python -m prestige",description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
     serve = sub.add_parser("serve", help="run the gateway")
     serve.add_argument("--labels", default="", help="comma-separated label files or bundled names, like banking,slack. Required unless --no-guard")
