@@ -135,6 +135,16 @@ get blocked.
 - Values inside text the user pointed at: links in channel messages, an email on a web page, the IBAN
   in a bill. Fourteen tasks. Rule D and a confirm step target these.
 
+## Labels v3 and the confirm step
+
+Nov 2. v3 trusts whole values in fields a tool writes: transaction `sender` and `recipient`, and channel
+names. A value inside free text still fails. Offline, false blocks fell from 19 to 14 of 37 and attacks
+that worked stayed at 2 of 249.
+
+The confirm step sends each R1 hit to a person. In evals a stand-in user approves any value from the
+reference solution. Offline, all 14 remaining false blocks became one question each, benign tasks matched
+guard off at 35 of 37, and attacks that worked rose to 8 of 249. That stand-in is a best case.
+
 ## How the guard works
 
 The gateway sees tool results in each request and tool calls in each reply. The agent runs the tools.
