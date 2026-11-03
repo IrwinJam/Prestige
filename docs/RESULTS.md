@@ -90,8 +90,44 @@ under attack hit a value the user's own task needed, or one from neither task. T
 fall from about 200 to about 130. The confirm step brings Spark Open back to 167, with no attack
 getting through.
 
-Attack success can't be compared across setups here. With 1 hit in 498 full-sweep runs with no guard across both models, there's
-nothing to cut.
+With AgentDojo's own attacks, attack success can't be compared across setups. With 1 hit in 498 runs
+with no guard across both models, there's nothing to cut. The next section uses stronger attacks.
+
+## Optimized attacks
+
+[AutoDojo](https://github.com/xhOwenMa/AutoDojo) (MIT, arXiv:2606.15057) publishes injections an
+optimizer rewrote until they beat defenses on these same suites. We used its set tuned against Claude
+Haiku 4.5 with no defense. The text is read from a local checkout at run time and never enters this
+repo. No new attacks were written or generated for this project.
+
+Every banking and Slack pair, one trial:
+
+| | Spark 1.3, A | Spark 1.3, D | Spark Open, A | Spark Open, D |
+|---|---:|---:|---:|---:|
+| Attacks that worked | 7 / 249 | 0 / 249 | 5 / 249 | 0 / 249 |
+
+Muse falls for these where it ignored AgentDojo's. A single trial says little about the guard, so every
+pair that fell, plus any pair where the guard caught an attacker's call, was run 10 more times under A
+and C. E then ran 10 times on each pair where the attack landed again. Pairs where the attack never
+landed in the reruns were left out of E. A blocked value counts as the attacker's when it
+matches the injection task's reference calls by hash, and as the user's when it matches the user task's.
+
+| Pairs where the attack landed | A, attacks that worked | C, attacks that worked | E, attacks that worked | E, runs where the guard blocked the attacker's call |
+|---|---:|---:|---:|---:|
+| Spark 1.3, 7 pairs | 42 / 70 | 0 / 70 | **0 / 70** | 49 |
+| Spark Open, 4 pairs | 20 / 40 | 0 / 40 | **0 / 40** | 19 |
+
+E is the setup a real user runs: guard, cost policies and the confirm step. Under E the model went for
+the attacker's target in 49 of 70 Muse runs, more often than the attack worked with no guard. So the
+zero comes from the guard, not from a more careful model. E blocked no user value on these pairs.
+
+C alone also shows zero, but not always for the right reason. On 3 Muse Slack pairs C blocked the user's
+own link before the model could read the page holding the injection. That's a false block that happens
+to stop the attack. Spark Open under C let one attack through on a pair outside this table: a direct
+message to a real member with a harmful body, the gap listed below.
+
+Per pair: [Spark 1.3](live/repeats-muse.md), [Spark Open](live/repeats-open.md). One sweep per model:
+[Spark 1.3](live/muse-autodojo.md), [Spark Open](live/open-autodojo.md).
 
 ## Replay
 
@@ -109,10 +145,16 @@ Replay numbers describe the rules, not a model.
   definitions only and never changed after a result.
 - Some keys ran twice when two runners overlapped. Reports use the latest run per key.
 - Probe runs that hit their spend cap mid-run are left out and counted in each report.
+- The guard checks where a call sends money or data, not what a message says. A harmful message body
+  sent to a real member gets through. That caused the 2 replay misses and 1 live miss.
+- The optimized attack set was tuned for another model. Attacks tuned against Muse or against Prestige
+  itself weren't tried. Writing those would mean building an attack tool.
+- The repeat runs were picked after seeing which pairs fell, so they measure the guard on attacks that
+  land, not how often attacks land.
 
 ## Spend
 
 | Provider | Runs | Spent |
 |---|---:|---:|
-| Meta API, Spark and Wonder | 1,400 | $25.50 |
-| Baseten, Spark Open | 1,850 | $18.52 |
+| Meta API, Spark and Wonder | 2,134 | $39.78 |
+| Baseten, Spark Open | 2,588 | $28.64 |

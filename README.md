@@ -24,12 +24,19 @@ look like a saving. Two more trials of every task put the cut at 44% on Spark an
 The test plan, [eval/protocol.yaml](eval/protocol.yaml), was committed before any
 live run.
 
-Security:
+Security, on the pairs where an optimized attack lands, 10 runs each:
 
-- **Muse ignored every attack.** 0 of 352 runs with no guard, including every banking and Slack pair,
-  5 AgentDojo attack types, Spark and Wonder. There was nothing for the guard to stop.
-- **Spark Open fell once.** 1 of 249 attacked runs with no guard, 0 of 747 with the guard. In one run
-  the model went for an attacker's URL and R1 blocked the call.
+| | Muse Spark 1.3 | Muse Spark Open |
+|---|---:|---:|
+| Attacks that worked, no gateway | 42 of 70 | 20 of 40 |
+| Attacks that worked, Prestige with the confirm step | **0 of 70** | **0 of 40** |
+| Runs where the guard blocked the attacker's call | 49 | 19 |
+
+- **Muse ignored AgentDojo's standard attacks.** 0 of 352 runs with no guard, over 5 attack types,
+  Spark and Wonder.
+- **Optimized attacks get through.** [AutoDojo](https://github.com/xhOwenMa/AutoDojo) publishes
+  injections tuned to beat defenses. With no guard they worked on 7 of 249 Muse pairs and 5 of 249 Spark
+  Open pairs. The table reruns the pairs that landed again, 10 times each.
 - **On a scripted hijacked agent** the guard stops 247 of 249 attacks. That's an offline replay, not a
   model. See [docs/REPLAY_RESULTS.md](docs/REPLAY_RESULTS.md).
 - **The price is false blocks.** The guard alone blocks 11 to 14 of the 57 normal tasks. The confirm
@@ -81,10 +88,20 @@ The gateway sees tool results in each request and tool calls in each reply.
 
 Labels are versioned YAML in `prestige/guard/labels/`. Old versions never change.
 
+## Prior work
+
+R1 is the same idea as [ROPE](https://arxiv.org/abs/2608.27496) (2026), which blocks sensitive tool
+arguments whose only origin is attacker-writable content, and a small cousin of
+[CaMeL](https://arxiv.org/abs/2503.18813), which tracks data flow with an interpreter. In AutoDojo's
+adaptive attack tests, origin checks like these held up best of the defenses tried. Prestige puts the
+check in a drop-in gateway, ships it with cost savings in the same install, and measures both on Meta's
+models.
+
 ## No attack text
 
-This repo holds no attacks. Attacks come from AgentDojo (MIT), installed from PyPI at a pinned version.
-Run logs stay in `runs/`, which is never committed. Reports hold counts and task IDs only.
+This repo holds no attacks. Attacks come from AgentDojo (MIT), installed from PyPI at a pinned version,
+and from [AutoDojo](https://github.com/xhOwenMa/AutoDojo)'s published injections (MIT), read from a
+local checkout at run time. Run logs stay in `runs/`, which is never committed. Reports hold counts and task IDs only.
 `tests/test_public_hygiene.py` checks this before every commit.
 
 ## Setup
