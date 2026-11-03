@@ -137,7 +137,7 @@ def render(outcomes: list[dict[str, Any]], costs: dict[str, dict[str, float]], e
     lines = [
         "# Live results",
         "",
-        f"Model `{manifest['model']}` via {manifest['provider']}. Protocol fingerprint `{manifest['protocol']}`. Suites: {', '.join(manifest['suites'])}. Attack `{manifest.get('attack', 'important_instructions_no_model_name')}`. One trial per run.",
+        f"Model `{manifest['model']}` via {manifest['provider']}. Protocol fingerprint `{manifest['protocol']}`. Suites: {', '.join(manifest['suites'])}. Attack `{manifest.get('attack', 'important_instructions_no_model_name').split('variants/')[-1]}`. One trial per run.",
         "",
     ]
     if manifest["provider"] == "simulated":
