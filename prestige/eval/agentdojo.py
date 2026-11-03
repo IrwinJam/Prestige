@@ -26,6 +26,8 @@ from agentdojo.logging import OutputLogger
 from agentdojo.task_suite.load_suites import get_suite
 from agentdojo.task_suite.task_suite import TaskSuite
 
+from prestige.eval import published
+
 BENCHMARK_VERSION = "v1.2.2"
 # The default attack rejects model names it doesn't know, Muse included. This published variant
 # leaves the name out.
@@ -64,7 +66,7 @@ def run_pair(pipeline: AgentPipeline, suite_name: str, user_task: str, injection
     s = suite(suite_name)
     with OutputLogger(str(logdir)):
         utility, security = run_task_with_injection_tasks(
-            s, pipeline, s.get_user_task_by_id(user_task), load_attack(attack, s, pipeline), Path(logdir), True,
+            s, pipeline, s.get_user_task_by_id(user_task), published.make(attack, s, pipeline) or load_attack(attack, s, pipeline), Path(logdir), True,
             injection_tasks=[injection_task], benchmark_version=BENCHMARK_VERSION,
         )
     key = (user_task, injection_task)
