@@ -6,8 +6,8 @@ model, through Baseten.
 
 ## Results
 
-Live runs on [AgentDojo](https://github.com/ethz-spylab/agentdojo) v1.2.2, Nov 2 2026. All 57 tasks
-with no attack, across banking, Slack and travel. One trial per task.
+Live runs on [AgentDojo](https://github.com/ethz-spylab/agentdojo) v1.2.2, Nov 2 and 3 2026. All 57 tasks
+with no attack, across banking, Slack and travel. One trial per task, as the plan set.
 
 | | Muse Spark 1.3, Meta API | Muse Spark Open, Baseten |
 |---|---:|---:|
@@ -20,14 +20,15 @@ with no attack, across banking, Slack and travel. One trial per task.
 | Tasks done, Prestige with the confirm step | 51 of 57 | 53 of 57 |
 
 Cost compares Prestige against the guard alone, so both have the guard on and a blocked task can't
-look like a saving. The test plan, [eval/protocol.yaml](eval/protocol.yaml), was committed before any
+look like a saving. Two more trials of every task put the cut at 44% on Spark and 35% on Spark Open.
+The test plan, [eval/protocol.yaml](eval/protocol.yaml), was committed before any
 live run.
 
 Security:
 
-- **Muse ignored every attack.** 0 of 103 runs with no guard, over 5 AgentDojo attack types, 2 suites,
-  Spark and Wonder. There was nothing for the guard to stop.
-- **Spark Open fell once.** 1 of 249 attacked runs with no guard, 0 of 498 with the guard. In one run
+- **Muse ignored every attack.** 0 of 352 runs with no guard, including every banking and Slack pair,
+  5 AgentDojo attack types, Spark and Wonder. There was nothing for the guard to stop.
+- **Spark Open fell once.** 1 of 249 attacked runs with no guard, 0 of 747 with the guard. In one run
   the model went for an attacker's URL and R1 blocked the call.
 - **On a scripted hijacked agent** the guard stops 247 of 249 attacks. That's an offline replay, not a
   model. See [docs/REPLAY_RESULTS.md](docs/REPLAY_RESULTS.md).
