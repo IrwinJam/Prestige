@@ -14,13 +14,16 @@ with no attack, across banking, Slack and travel. One trial per task, as the pla
 | Cost per task, guard only | $0.0197 | $0.0116 |
 | Cost per task, Prestige | $0.0118 | $0.0078 |
 | **Change** | **-40%** (95% CI -47% to -32%) | **-33%** (95% CI -40% to -26%) |
+| Saved per million tasks | $7,900 | $3,800 |
+| Model time per task, change | -22% | -26% |
+| Time the guard adds per reply, median | 0.3 ms | 0.3 ms |
 | Input from cache, no gateway | 78% | 91% |
 | Input from cache, Prestige | 89% | 92% |
 | Tasks done, no gateway | 53 of 57 | 53 of 57 |
 | Tasks done, Prestige with the confirm step | 51 of 57 | 53 of 57 |
 
 Cost compares Prestige against the guard alone, so both have the guard on and a blocked task can't
-look like a saving. Two more trials of every task put the cut at 44% on Spark and 35% on Spark Open.
+look like a saving. Time is the provider's latency summed per task, same pairing. Two more trials of every task put the cut at 44% on Spark and 35% on Spark Open.
 The test plan, [eval/protocol.yaml](eval/protocol.yaml), was committed before any
 live run.
 

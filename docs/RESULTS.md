@@ -38,6 +38,37 @@ models. Spark Open already caches well on its own, so the cache layout adds less
 With 3 trials, each task's runs are averaged first and setups are paired by task. Reports:
 [Spark 1.3](live/main-benign-3-trials.md), [Spark Open](live/open-benign-3-trials.md).
 
+At scale, per million tasks like these, at the per-task costs above:
+
+| | Spark 1.3 | Spark Open |
+|---|---:|---:|
+| Guard only (C) | $19,700 | $11,600 |
+| Prestige (D) | $11,800 | $7,800 |
+| Saved | $7,900 | $3,800 |
+| No gateway (A) | $23,200 | $12,600 |
+| Prestige with the confirm step (E) | $12,700 | $8,200 |
+| Saved, what a buyer sees going from A to E | $10,500 (45%) | $4,400 (35%) |
+
+A to E isn't the planned comparison, because A has no guard and can't block anything. It's what a team
+pays before and after installing Prestige. AgentDojo tasks are short, 4 to 5 model calls each. Longer
+agent runs resend more history per call, so the cache layout may save more there. That isn't measured
+here.
+
+## Time
+
+The guard needs no model call. Screening a reply took a median of 0.3 to 0.5 ms and at most 7.5 ms,
+over 6,043 recorded replies from both models, against 1.5 to 5.7 s for the model's own reply. Prestige
+also makes tasks faster, because low reasoning effort means fewer output tokens:
+
+| Model time per task, no attack | Spark 1.3 | Spark Open |
+|---|---:|---:|
+| C, median | 22.4 s | 8.4 s |
+| D, median | 18.2 s | 6.3 s |
+| D against C, median of pairs | -22% | -26% |
+
+Guard time was measured by screening every recorded reply again on one laptop. Model time is the
+provider latency in the trace. Report: [live/overhead.md](live/overhead.md).
+
 ## Tasks done with no attack
 
 | | Spark 1.3 | Spark Open |
