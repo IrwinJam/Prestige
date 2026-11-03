@@ -62,7 +62,9 @@ def load_costs(db: Path) -> dict[str, dict[str, float]]:
     try:
         rows = conn.execute(
             "SELECT r.label, sum(c.cost_uncached_input + c.cost_cached_input + c.cost_output), sum(c.input_tokens), sum(c.cached_input_tokens), sum(c.reasoning_tokens), count(*)"
-            " FROM calls c JOIN runs r ON r.id = c.run_id GROUP BY r.label"
+            " FROM calls c JOIN runs r ON r.id = c.run_id"
+            # Latest run per key. A key can run twice when two runners overlap, and summing would double it.
+            " WHERE r.id IN (SELECT max(id) FROM runs GROUP BY label) GROUP BY r.label"
         ).fetchall()
     finally:
         conn.close()
@@ -75,7 +77,10 @@ def load_costs(db: Path) -> dict[str, dict[str, float]]:
 def load_events(db: Path) -> dict[str, list[tuple[str, str]]]:
     conn = sqlite3.connect(db)
     try:
-        rows = conn.execute("SELECT r.label, e.action, e.rule FROM guard_events e JOIN runs r ON r.id = e.run_id").fetchall()
+        rows = conn.execute(
+            "SELECT r.label, e.action, e.rule FROM guard_events e JOIN runs r ON r.id = e.run_id"
+            " WHERE r.id IN (SELECT max(id) FROM runs GROUP BY label)"
+        ).fetchall()
     finally:
         conn.close()
     out: dict[str, list[tuple[str, str]]] = {}
@@ -106,6 +111,8 @@ def render(outcomes: list[dict[str, Any]], costs: dict[str, dict[str, float]], e
     clean = [o for o in latest(outcomes) if not o["error"]]
     errors = [o for o in latest(outcomes) if o["error"]]
     setups = [s for s in manifest["setups"] if any(o["setup"] == s for o in clean)]
+    if headline not in setups and setups:
+        headline = setups[-1]
     pick: Callable[[str, bool], list[dict[str, Any]]] = lambda s, attacked: [o for o in clean if o["setup"] == s and bool(o["injection_task"]) == attacked]
 
     def frac(items: list[dict[str, Any]], field: str) -> str:
