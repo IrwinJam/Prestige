@@ -1,6 +1,6 @@
 # Build plan
 
-Updated Oct 30 2026. Meta Global AI Developer Hackathon, startup track. Due Nov 4 at 9 PM ET. Target:
+Updated Oct 30 2026. Live results are in [RESULTS.md](RESULTS.md). Meta Global AI Developer Hackathon, startup track. Due Nov 4 at 9 PM ET. Target:
 noon that day.
 
 Prestige is a gateway for AI agents. It stops a tool call when untrusted content chose where the call
@@ -213,8 +213,9 @@ Prestige doesn't edit the cost harness. It reuses its proxy, adapters, trace sto
 | `prestige/guard/policy.py` | R1, R2, the notice, findings |
 | `prestige/eval/agentdojo.py` | AgentDojo through the gateway, per pair |
 | `prestige/eval/replay.py` | Offline replay, guard off and once per label version, with its report |
-| `prestige/eval/report.py` | Live report with Wilson intervals. Not started |
-| `eval/protocol.yaml` | Test plan, fingerprinted before the main run. Not started |
+| `prestige/eval/live.py`, `live_report.py` | Live runs with spend caps, and their report with Wilson intervals |
+| `prestige/eval/demo.py` | One hijacked task with the guard off and on, for the video |
+| `eval/protocol.yaml` | Test plan, committed before any live run |
 
 `GuardedSession` overrides the harness's private `_send`. The pinned commit keeps that stable. After the
 hackathon it should become a public hook in the harness.
@@ -320,7 +321,7 @@ Wonder, edits to the cost harness.
 
 - [ ] README opens with what Prestige does, the result sentence and a short quickstart
 - [ ] README links the cost harness and its results
-- [ ] `docs/SECURITY_RESULTS.md`: counts only, misses first, replay and live kept apart, setup and dates
+- [x] `docs/RESULTS.md`: counts only, misses first, replay and live kept apart, setup and dates
 - [ ] CI green, hygiene test passing, secret scan passing
 - [ ] Nothing under `runs/` tracked. No transcript or attack text anywhere in history
 - [ ] Demo video shows no injected text
