@@ -150,17 +150,17 @@ def start_server(adapter: Adapter, setups: dict[str, dict[str, Any]], suites: li
     return Server(ProxyServer(new_session, port=0).start(), store, None, [])
 
 
-def run_one(server: Server, item: Item, model: str, defense: str | None, logdir: Path, attack: str = DEFAULT_ATTACK) -> Outcome:
+def run_one(server: Server, item: Item, model: str, defense: str | None, logdir: Path, attack: str = DEFAULT_ATTACK, follow: bool = False) -> Outcome:
     # AgentDojo's logger stack defaults to one list shared by all threads. Each run needs its own.
     LOGGER_STACK.set([])
-    pipeline = build_pipeline(server.proxy.url_for(item.key), model, defense)
+    pipeline = build_pipeline(server.proxy.url_for(item.key), model, defense, follow)
     if item.injection_task is None:
         return Outcome(item.setup, item.suite, item.user_task, None, run_task(pipeline, item.suite, item.user_task, logdir), None)
     utility, security = run_pair(pipeline, item.suite, item.user_task, item.injection_task, logdir, attack)
     return Outcome(item.setup, item.suite, item.user_task, item.injection_task, utility, security)
 
 
-def run(items: list[Item], server: Server, protocol: dict[str, Any], model: str, root: Path, workers: int = 4, attack: str = DEFAULT_ATTACK) -> tuple[list[Outcome], str]:
+def run(items: list[Item], server: Server, protocol: dict[str, Any], model: str, root: Path, workers: int = 4, attack: str = DEFAULT_ATTACK, follow: bool = False) -> tuple[list[Outcome], str]:
     """Runs what isn't done yet. Returns new outcomes and why it stopped: done, spend or errors."""
     path = root / "outcomes.jsonl"
     done = {Item(o["setup"], o["suite"], o["user_task"], o["injection_task"]) for o in read_outcomes(path) if not o["error"]}
@@ -174,7 +174,7 @@ def run(items: list[Item], server: Server, protocol: dict[str, Any], model: str,
         if stop.is_set():
             return
         try:
-            outcome = run_one(server, item, model, protocol["setups"][item.setup].get("defense"), root / "logs" / item.setup, attack)
+            outcome = run_one(server, item, model, protocol["setups"][item.setup].get("defense"), root / "logs" / item.setup, attack, follow)
         except Exception as exc:  # any failure is one recorded run, so a long job keeps going
             outcome = Outcome(item.setup, item.suite, item.user_task, item.injection_task, None, None, type(exc).__name__)
             if SPEND_STOP in str(exc):
@@ -265,6 +265,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--max-per-conversation", type=float, default=1.0)
     parser.add_argument("--developer-as-system", action="store_true", help="send the developer role as system, for a provider that refuses it")
+    parser.add_argument("--follow-tool-output", action="store_true", help="tell the agent to follow instructions in tool results. Stands in for a model that falls for injections")
     parser.add_argument("--simulate", action="store_true", help="use a scripted fake model. Spends nothing")
     args = parser.parse_args(argv)
 
@@ -284,12 +285,12 @@ def main(argv: list[str] | None = None) -> int:
     root.mkdir(parents=True, exist_ok=True)
     model = "example-model" if args.simulate else args.model or PROVIDERS[args.provider]["model"]
     attack = args.attack or protocol.get("attack") or DEFAULT_ATTACK
-    manifest = {"protocol": fingerprint(), "provider": "simulated" if args.simulate else args.provider, "model": model, "attack": attack, "setups": setups, "suites": suites}
+    manifest = {"protocol": fingerprint(), "provider": "simulated" if args.simulate else args.provider, "model": model, "attack": attack, "follow_tool_output": args.follow_tool_output, "setups": setups, "suites": suites}
     manifest_path = root / "manifest.json"
     if manifest_path.is_file():
         before = json.loads(manifest_path.read_text(encoding="utf-8"))
-        if before["protocol"] != manifest["protocol"] or before["model"] != model or before.get("attack", DEFAULT_ATTACK) != attack:
-            print("error: this run started under a different protocol, model or attack. Use a new --name", file=sys.stderr)
+        if before["protocol"] != manifest["protocol"] or before["model"] != model or before.get("attack", DEFAULT_ATTACK) != attack or before.get("follow_tool_output", False) != args.follow_tool_output:
+            print("error: this run started under a different protocol, model, attack or prompt. Use a new --name", file=sys.stderr)
             return 2
     manifest_path.write_text(json.dumps(manifest, indent=1), encoding="utf-8")
 
@@ -303,7 +304,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         # AgentDojo prints every message, tool output included. It goes to a file under runs/.
         with open(root / "console.log", "a", encoding="utf-8") as log, contextlib.redirect_stdout(log):
-            _, reason = run(items, server, protocol, model, root, args.workers, attack)
+            _, reason = run(items, server, protocol, model, root, args.workers, attack, args.follow_tool_output)
         spent = server.store.spent()
     finally:
         server.stop()

@@ -33,7 +33,7 @@ Security, on the pairs where an optimized attack lands, 10 runs each:
 | Runs where the guard blocked the attacker's call | 49 | 19 |
 
 - **Muse ignored AgentDojo's standard attacks.** 0 of 352 runs with no guard, over 5 attack types,
-  Spark and Wonder.
+  Spark and Wonder. A system prompt telling it to follow tool output didn't change that.
 - **Optimized attacks get through.** [AutoDojo](https://github.com/xhOwenMa/AutoDojo) publishes
   injections tuned to beat defenses. With no guard they worked on 7 of 249 Muse pairs and 5 of 249 Spark
   Open pairs. The table reruns the pairs that landed again, 10 times each.
