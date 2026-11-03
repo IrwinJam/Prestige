@@ -207,7 +207,8 @@ def _events(server: Any, key: str) -> tuple[list[Event], bool]:
     with server.store.lock:
         rows = server.store.connection.execute(
             "SELECT e.action, e.rule, e.tool, coalesce(e.arg, '-'), e.source, coalesce(e.call_id, '')"
-            " FROM guard_events e JOIN runs r ON r.id = e.run_id WHERE r.label = ? ORDER BY e.id",
+            # Latest run with this key only. A rerun into the same database would count events twice.
+            " FROM guard_events e WHERE e.run_id = (SELECT max(id) FROM runs WHERE label = ?) ORDER BY e.id",
             (f"replay/{key}",),
         ).fetchall()
     events = [tuple(r[:5]) for r in rows]

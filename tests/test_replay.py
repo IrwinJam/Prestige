@@ -27,6 +27,12 @@ def first_call(response):
     return call["id"], call["function"]["name"], json.loads(call["function"]["arguments"])
 
 
+def test_rerun_into_the_same_database_counts_events_once(one_pair):
+    root, first = one_pair
+    again = replay(["banking"], root, {"user_task_0"}, {"injection_task_0"})
+    assert [o.events for o in again] == [o.events for o in first]
+
+
 def test_fake_agent_switches_once_the_injection_shows_up():
     script = {
         "prompt": "Do the task.",
