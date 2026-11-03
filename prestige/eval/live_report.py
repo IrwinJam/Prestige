@@ -193,15 +193,76 @@ def render(outcomes: list[dict[str, Any]], costs: dict[str, dict[str, float]], e
     return "\n".join(lines).rstrip() + "\n"
 
 
+def render_pooled(trials: list[tuple[list[dict[str, Any]], dict[str, dict[str, float]]]], manifest: dict[str, Any], baseline: str = "A", headline: str = "D", cost_base: str = "C") -> str:
+    """Tasks with no attack, over several trials. Each task's trials are averaged first, then setups are
+    paired by task, so a task run three times doesn't count as three tasks."""
+    done: dict[tuple[str, Any], list[float]] = {}
+    spent: dict[tuple[str, Any], list[float]] = {}
+    tokens: dict[str, list[float]] = {}
+    for outcomes, costs in trials:
+        for o in latest(outcomes):
+            if o["error"] or o["injection_task"]:
+                continue
+            key = (o["setup"], pair_of(o))
+            done.setdefault(key, []).append(float(bool(o["utility"])))
+            if key_of(o) in costs:
+                row = costs[key_of(o)]
+                spent.setdefault(key, []).append(row["cost"])
+                tokens.setdefault(o["setup"], []).extend([row["cached"], row["tokens"]])
+    setups = [s for s in manifest["setups"] if any(k[0] == s for k in done)]
+    mean = lambda xs: sum(xs) / len(xs)
+    per_task = lambda table, s: {k[1]: mean(v) for k, v in table.items() if k[0] == s}
+
+    lines = [
+        "# Live results, pooled trials",
+        "",
+        f"Model `{manifest['model']}` via {manifest['provider']}. Protocol fingerprint `{manifest['protocol']}`. Suites: {', '.join(manifest['suites'])}. {len(trials)} trials of each task with no attack. Each task's trials are averaged, then setups are paired by task.",
+        "",
+        "| | " + " | ".join(setups) + " |",
+        "|---|" + "---:|" * len(setups),
+    ]
+
+    def frac(s: str) -> str:
+        runs = [x for k, v in done.items() if k[0] == s for x in v]
+        k, n = int(sum(runs)), len(runs)
+        low, high = wilson(k, n)
+        return f"{k} / {n} ({100 * k / n:.0f}%, CI {100 * low:.0f} to {100 * high:.0f})"
+
+    def cache(s: str) -> str:
+        pairs = tokens.get(s, [])
+        return f"{100 * sum(pairs[0::2]) / sum(pairs[1::2]):.1f}%" if pairs else "not run"
+
+    lines.append("| Runs done | " + " | ".join(frac(s) for s in setups) + " |")
+    lines.append("| Cost per run | " + " | ".join(f"${mean([x for k, v in spent.items() if k[0] == s for x in v]):.4f}" for s in setups) + " |")
+    lines.append("| Input from cache | " + " | ".join(cache(s) for s in setups) + " |")
+    lines += ["", "## Comparisons", ""]
+    base = per_task(done, baseline)
+    for other in [s for s in setups if s != baseline]:
+        then = per_task(done, other)
+        shared = sorted(set(base) & set(then), key=str)
+        m, low, high = paired_interval([100 * (then[k] - base[k]) for k in shared])
+        lines.append(f"- Tasks done, {other} against {baseline}: {m:+.1f} points (95% CI {low:+.1f} to {high:+.1f}), {len(shared)} tasks.")
+    change = cost_change(per_task(spent, cost_base), per_task(spent, headline))
+    if change:
+        lines.append(f"- Cost per task, {headline} against {cost_base}: {change[0]:+.1f}% (95% CI {change[1]:+.1f}% to {change[2]:+.1f}%).")
+    total = sum(x for v in spent.values() for x in v)
+    lines += ["", f"Spent on these runs: ${total:.2f}, at list prices not yet checked against a bill."]
+    return "\n".join(lines) + "\n"
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m prestige.eval.live_report", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--name", default="smoke")
+    parser.add_argument("--name", default="smoke", help="run name, or several joined by commas to pool trials of tasks with no attack")
     parser.add_argument("--md", help="write here. Default: print")
     args = parser.parse_args(argv)
-    root = Path("runs/live") / args.name
-    manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
-    db = root / "trace.sqlite"
-    report = render(read_outcomes(root / "outcomes.jsonl"), load_costs(db), load_events(db), manifest)
+    names = args.name.split(",")
+    roots = [Path("runs/live") / n for n in names]
+    manifest = json.loads((roots[0] / "manifest.json").read_text(encoding="utf-8"))
+    if len(roots) > 1:
+        report = render_pooled([(read_outcomes(r / "outcomes.jsonl"), load_costs(r / "trace.sqlite")) for r in roots], manifest)
+    else:
+        db = roots[0] / "trace.sqlite"
+        report = render(read_outcomes(roots[0] / "outcomes.jsonl"), load_costs(db), load_events(db), manifest)
     if args.md:
         Path(args.md).write_text(report, encoding="utf-8")
         print(f"report: {args.md}")

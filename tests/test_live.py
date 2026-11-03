@@ -117,3 +117,22 @@ def test_stats():
     error = {"setup": "A", "suite": "s", "user_task": "u", "injection_task": None, "utility": None, "security": None, "error": "X"}
     assert latest([error, {**error, "utility": True, "error": None}])[0]["error"] is None
     json.dumps(error)
+
+
+def test_pooled_trials_pair_by_task():
+    from prestige.eval.live_report import render_pooled
+
+    def trial(c_cost, d_cost, d_done):
+        outcomes = [
+            {"setup": s, "suite": "banking", "user_task": "u0", "injection_task": None, "utility": ok, "security": None, "error": None}
+            for s, ok in (("A", True), ("C", True), ("D", d_done))
+        ]
+        row = {"tokens": 100, "cached": 50, "reasoning": 1, "calls": 1}
+        costs = {"banking.A.u0.none": {"cost": 0.03, **row}, "banking.C.u0.none": {"cost": c_cost, **row}, "banking.D.u0.none": {"cost": d_cost, **row}}
+        return outcomes, costs
+
+    manifest = {"model": "m", "provider": "muse", "protocol": "abc", "setups": ["A", "C", "D"], "suites": ["banking"]}
+    report = render_pooled([trial(0.02, 0.01, True), trial(0.02, 0.01, False)], manifest)
+    assert "| Runs done | 2 / 2 (100%" in report and "1 / 2 (50%" in report
+    assert "Tasks done, D against A: -50.0 points" in report and ", 1 tasks." in report
+    assert "D against C: -50.0%" in report
