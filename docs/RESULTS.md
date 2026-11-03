@@ -183,7 +183,8 @@ Replay numbers describe the rules, not a model.
 ## Limits
 
 - The planned runs are one trial per task. Costs are paired by task, which helps.
-- Prices are list prices. Baseten's cached input rate is assumed equal to Meta's and not confirmed.
+- Prices are list prices, not checked against a bill. Baseten's posted rates for Spark Open, checked Nov 3,
+  match the ones used: $1.25 input, $0.15 cached input, $4.25 output per million tokens.
 - E's stand-in user is a best case.
 - Banking and Slack labels were tuned on offline replays. Travel labels were written from tool
   definitions only and never changed after a result.
