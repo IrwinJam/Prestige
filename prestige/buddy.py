@@ -25,7 +25,7 @@ DEFAULT_DB = "runs/prestige.sqlite"
 
 # A little buddy in a hood, with its face peeking out. Every line is the same width.
 def _face(eyes: str, mouth: str) -> list[str]:
-    return [
+    return ["    " + row for row in [
         "      .-~~~~~-.      ",
         "    .'         '.    ",
         "   /  .-------.  \\   ",
@@ -35,7 +35,7 @@ def _face(eyes: str, mouth: str) -> list[str]:
         "  /|             |\\  ",
         " ( |             | ) ",
         "  '~~~~~~~~~~~~~~~'  ",
-    ]
+    ]]  # shifted right so the cheer's arms fit
 
 
 FACES = {
@@ -45,17 +45,17 @@ FACES = {
     "alarm": _face(" O   O ", "*  o  *"),
     "stern": _face(" >   < ", "   -   "),
     "happy": _face(" ^   ^ ", "*  w  *"),
-    # Arm up, eyes shut, all done.
+    # Both arms up, eyes shut, all done.
     "cheer": [
-        "      .-~~~~~-.         ",
-        "    .'         '.     o ",
-        "   /  .-------.  \\   /  ",
-        "   |  ( ^   ^ )  |  /   ",
-        "   |  (*  w  *)  | /    ",
-        "   |  '-------'  |/     ",
-        "  /|             |      ",
-        " ( |             |      ",
-        "  '~~~~~~~~~~~~~~~'     ",
+        "          .-~~~~~-.          ",
+        "  o     .'         '.     o  ",
+        "   \\   /  .-------.  \\   /   ",
+        "    \\  |  ( ^   ^ )  |  /    ",
+        "     \\ |  (*  w  *)  | /     ",
+        "      \\|  '-------'  |/      ",
+        "       |             |       ",
+        "       |             |       ",
+        "      '~~~~~~~~~~~~~~~'      ",
     ],
 }
 
@@ -94,7 +94,7 @@ class Sprite:
         paint = (lambda s, c=COLORS[mood]: f"\033[{c}m{s}\033[0m") if self.color else (lambda s, c="": s)
         for line in face:
             self.out.write(paint(line) + "\n")
-        width = len(FACES["idle"][0])
+        width = len(FACES["cheer"][0])
         self.out.write(paint(NAME.center(width).rstrip(), "1") + "\n")
         if self.model:
             self.out.write(paint(self.model.center(width).rstrip(), "90") + "\n")

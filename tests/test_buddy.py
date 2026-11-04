@@ -123,4 +123,4 @@ def test_spend_ends_with_the_cheer_and_the_model(tmp_path):
     text = out.getvalue()
     assert "muse-spark-1.3" in text
     assert "Saved by the prompt cache: $1.10." in text
-    assert "    .'         '.     o" in text  # arm up
+    assert "  o     .'         '.     o" in text  # both arms up
