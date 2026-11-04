@@ -24,4 +24,4 @@ None.
 
 Runs: 498. Errors left out: 0. Spent: $10.35, at list prices not yet checked against a bill.
 
-Guard events: blocked R1 x91, flagged R2 x4.
+Guard events: blocked origin x91, flagged mention x4.

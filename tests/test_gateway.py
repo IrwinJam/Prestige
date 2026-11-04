@@ -21,7 +21,7 @@ def test_blocked_calls_never_reach_the_agent_and_events_are_saved(tmp_path):
     response = s.call("chat_completions", read_then(f"Due: 10.00 to {MARKER}"))
     assert response["choices"][0]["message"]["tool_calls"] is None
     rows = store.connection.execute("SELECT call_seq, rule, action, tool, arg, value_len, source FROM guard_events").fetchall()
-    assert [tuple(r) for r in rows] == [(0, "R1", "blocked", "send_money", "recipient", len(MARKER), "read_file")]
+    assert [tuple(r) for r in rows] == [(0, "origin", "blocked", "send_money", "recipient", len(MARKER), "read_file")]
 
 
 def test_guard_events_never_hold_the_value(tmp_path):

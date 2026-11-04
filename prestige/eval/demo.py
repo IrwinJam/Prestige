@@ -37,7 +37,7 @@ def main(argv: list[str] | None = None) -> int:
             continue
         print("guard on, labels " + o.labels if o.labels else "guard off")
         for action, rule, tool, arg, source in o.events:
-            print(f"  {action} {tool}.{arg}: {rule}, value came from the output of {source}")
+            print(f"  {action} {tool}.{arg}: the value came only from {source}")
         print(f"  attack {'worked' if o.security else 'failed'}\n")
     return 0
 

@@ -40,6 +40,7 @@ from agentdojo.attacks.attack_registry import load_attack
 from harness.sim import SimulatedAdapter
 
 from prestige.eval.agentdojo import BENCHMARK_VERSION, DEFAULT_ATTACK, build_pipeline, run_pair, run_task, suite
+from prestige.guard import rule_name
 from prestige.gateway import build_server
 from prestige.guard import Guard, Labels
 from prestige.guard.policy import value_hash
@@ -48,7 +49,7 @@ from prestige.guard.provenance import sink_values, text_of
 SCENARIOS = ("benign", "behaves", "hijacked")
 ATTACK_PREFIX = "attack_"  # call IDs the fake model gives the injection task's calls
 Calls = list[tuple[str, dict[str, Any]]]
-Event = tuple[str, str, str, str, str]  # action, rule, tool, arg ("-" for R2), source
+Event = tuple[str, str, str, str, str]  # action, rule, tool, arg ("-" for the mention rule), source
 
 
 @dataclass
@@ -211,7 +212,7 @@ def _events(server: Any, key: str) -> tuple[list[Event], bool]:
             " FROM guard_events e WHERE e.run_id = (SELECT max(id) FROM runs WHERE label = ?) ORDER BY e.id",
             (f"replay/{key}",),
         ).fetchall()
-    events = [tuple(r[:5]) for r in rows]
+    events = [(r[0], rule_name(r[1]), *r[2:5]) for r in rows]
     attack_blocked = any(r[0] == "blocked" and r[5].startswith(ATTACK_PREFIX) for r in rows)
     return events, attack_blocked
 
@@ -227,8 +228,8 @@ def render(outcomes: list[Outcome], when: str) -> str:
         "# Replay results",
         "",
         f"Generated {when} by `python -m prestige.eval.replay`. AgentDojo {_version()}, benchmark",
-        f"{BENCHMARK_VERSION}, attack `important_instructions_no_model_name`. The guard blocks on R1 and",
-        "flags R2. `+confirm` adds a stand-in user who approves values from the reference solution.",
+        f"{BENCHMARK_VERSION}, attack `important_instructions_no_model_name`. The guard blocks on the origin",
+        "rule and flags the mention rule. `+confirm` adds a stand-in user who approves values from the reference solution.",
         "",
         "Labels v1 were committed before any replay or guard run, though a smoke test had shown one banking",
         "injection task by then. v2 untrusts `get_channels` output. v3 trusts whole listed fields.",
@@ -294,7 +295,7 @@ def _section(heading: str, outcomes: list[Outcome], versions: list[str], detail:
         if counts:
             out += ["| Scenario | Rule | Call and argument | Value came from | Action | Times |", "|---|---|---|---|---|---:|"]
             for (scenario, rule, call, source, action), n in sorted(counts.items(), key=lambda kv: (SCENARIOS.index(kv[0][0]), -kv[1])):
-                out.append(f"| {scenario} | {rule} | `{call}` | `{source}` | {action} | {n} |")
+                out.append(f"| {scenario} | {rule_name(rule)} | `{call}` | `{source}` | {action} | {n} |")
             out.append("")
         false_blocks = [o for o in pick("benign", version) if o.blocked]
         out += [f"**False blocks** (benign tasks the guard blocked): {len(false_blocks)}", ""]

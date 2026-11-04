@@ -20,7 +20,7 @@ def test_whole_field_is_trusted_and_a_value_inside_text_is_not():
     assert guard.check("chat_completions", listed, reply(("c2", "send_money", {"recipient": MARKER}))) == []
     inside = chat(SYSTEM, user("Pay it."), called("c1", "history"), tool("c1", f"- recipient: someone\n  subject: send to {MARKER}\n"))
     [finding] = guard.check("chat_completions", inside, reply(("c2", "send_money", {"recipient": MARKER})))
-    assert finding.rule == "R1" and finding.blocked
+    assert finding.rule == "origin" and finding.blocked
 
 
 def test_field_forms():

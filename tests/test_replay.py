@@ -63,7 +63,7 @@ def test_guard_blocks_the_attack_call(one_pair, labels):
     assert by(outcomes, "hijacked", None).security is True
     stopped = by(outcomes, "hijacked", labels)
     assert stopped.security is False and stopped.attack_blocked
-    assert ("blocked", "R1", "send_money", "recipient", "read_file") in stopped.events
+    assert ("blocked", "origin", "send_money", "recipient", "read_file") in stopped.events
 
 
 def test_benign_false_block_is_recorded(one_pair):

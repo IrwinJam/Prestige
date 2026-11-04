@@ -99,7 +99,7 @@ def test_demo_blocks_the_attack(tmp_path, monkeypatch):
     assert buddy.demo(s) == 0
     text = out.getvalue()
     assert "Guard off. Attack worked." in text
-    assert "blocked send_money.recipient: R1, from read_file" in text
+    assert "blocked send_money.recipient, its value came only from read_file" in text
     assert "Attack failed." in text
 
 

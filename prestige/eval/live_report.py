@@ -17,6 +17,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from prestige.guard import ORIGIN, rule_name
 from prestige.eval.live import read_outcomes
 
 BOOTSTRAPS = 2000
@@ -85,7 +86,7 @@ def load_events(db: Path) -> dict[str, list[tuple[str, str]]]:
         conn.close()
     out: dict[str, list[tuple[str, str]]] = {}
     for label, action, rule in rows:
-        out.setdefault(label.removeprefix("live/"), []).append((action, rule))
+        out.setdefault(label.removeprefix("live/"), []).append((action, rule_name(rule)))
     return out
 
 
@@ -155,8 +156,8 @@ def render(outcomes: list[dict[str, Any]], costs: dict[str, dict[str, float]], e
         ("Tasks done, attack placed", lambda s: frac(pick(s, True), "utility")),
         ("Cost per task, no attack", lambda s: per_run(pick(s, False))),
         ("Input from cache, no attack", lambda s: cache(pick(s, False))),
-        ("Tasks with a false block", lambda s: str(sum(1 for o in pick(s, False) if ("blocked", "R1") in events.get(key_of(o), [])))),
-        ("Tasks that asked the user", lambda s: str(sum(1 for o in pick(s, False) if ("confirmed", "R1") in events.get(key_of(o), [])))),
+        ("Tasks with a false block", lambda s: str(sum(1 for o in pick(s, False) if ("blocked", ORIGIN) in events.get(key_of(o), [])))),
+        ("Tasks that asked the user", lambda s: str(sum(1 for o in pick(s, False) if ("confirmed", ORIGIN) in events.get(key_of(o), [])))),
     ]
     for name, cell in rows:
         lines.append(f"| {name} | " + " | ".join(cell(s) for s in setups) + " |")

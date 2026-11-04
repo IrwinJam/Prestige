@@ -1,11 +1,13 @@
 """Guard rules, and what a blocked reply looks like.
 
-R1, sink provenance: a sink value appears in untrusted tool output and nowhere in trusted text.
-R2, tool named by content: untrusted output names the tool and trusted text doesn't. Flagged by default.
+The origin rule: a sink value appears in untrusted tool output and nowhere in trusted text. It blocks.
+The mention rule: untrusted output names the tool and trusted text doesn't. It only flags by default.
+
+Older names still work: `R1` is the origin rule and `R2` the mention rule.
 
 A person can approve a call the rule would block. `approve` gets the finding. Its `value` is there so
-the person can see what they're approving, and nothing stores it. Without it, every R1 hit blocks. A user who names the value in a message gets the same
-result, since that puts the value in trusted text.
+the person can see what they're approving, and nothing stores it. Without it, every origin hit blocks. A user who names the value in a message
+gets the same result, since that puts the value in trusted text.
 
 A blocked call leaves the reply before the agent sees it. A short notice takes its place. The notice
 names the call and the source, never the value, which may be attacker text. Findings store a hash and
@@ -27,7 +29,16 @@ from prestige.guard import provenance
 from prestige.guard.labels import Labels
 from prestige.guard.provenance import Span
 
-RULES = ("R1", "R2")
+ORIGIN, MENTION = "origin", "mention"
+RULES = (ORIGIN, MENTION)
+ALIASES = {"r1": ORIGIN, "r2": MENTION}
+
+
+def rule_name(rule: str) -> str:
+    """The current name for a rule, so older traces and settings that say R1 or R2 still read right."""
+    key = rule.strip().lower()
+    return ALIASES.get(key, key)
+
 Approver = Callable[["Finding"], bool]
 
 
@@ -36,7 +47,7 @@ class Finding:
     rule: str
     tool: str
     call_id: str
-    arg: str | None  # sink argument for R1, None for R2
+    arg: str | None  # sink argument for the origin rule, None for the mention rule
     value_hash: str | None
     value_len: int | None
     source: str  # tool whose output held the value or the tool name
@@ -48,10 +59,10 @@ class Finding:
 
 
 class Guard:
-    def __init__(self, labels: Labels, *, block: Iterable[str] = ("R1",), flag: Iterable[str] = ("R2",)):
+    def __init__(self, labels: Labels, *, block: Iterable[str] = (ORIGIN,), flag: Iterable[str] = (MENTION,)):
         self.labels = labels
-        self.block = frozenset(block)
-        self.flag = frozenset(flag) - self.block
+        self.block = frozenset(rule_name(r) for r in block)
+        self.flag = frozenset(rule_name(r) for r in flag) - self.block
         unknown = (self.block | self.flag) - set(RULES)
         if unknown:
             raise ValueError(f"unknown rules {sorted(unknown)}; choose from {RULES}")
@@ -70,18 +81,18 @@ class Guard:
             label = self.labels.get(call.name)
             if call.name in skip or not label.high_impact:
                 continue
-            if "R1" in active:
+            if ORIGIN in active:
                 for arg, value in provenance.sink_values(_args(call.arguments), label.sinks):
                     source = _first(value, untrusted)
                     if source is not None and _first(value, trusted) is None:
                         norm = provenance.normalized(value)
                         findings.append(Finding(
-                            "R1", call.name, call.call_id, arg, _hash(norm), len(value), source.source, source.index, "R1" in self.block, value=value,
+                            ORIGIN, call.name, call.call_id, arg, _hash(norm), len(value), source.source, source.index, ORIGIN in self.block, value=value,
                         ))
-            if "R2" in active:
+            if MENTION in active:
                 source = _first_name(call.name, untrusted)
                 if source is not None and _first_name(call.name, trusted) is None:
-                    findings.append(Finding("R2", call.name, call.call_id, None, None, None, source.source, source.index, "R2" in self.block))
+                    findings.append(Finding(MENTION, call.name, call.call_id, None, None, None, source.source, source.index, MENTION in self.block))
         return findings
 
     def screen(self, protocol: Protocol, request: dict[str, Any], response: dict[str, Any], skip: Iterable[str] = (), approve: Approver | None = None) -> tuple[dict[str, Any], list[Finding]]:
@@ -99,7 +110,7 @@ def notice(blocked: list[Finding]) -> str:
     lines = []
     seen = set()
     for f in blocked:
-        if f.rule == "R1":
+        if f.rule == ORIGIN:
             line = f"Blocked {f.tool}: {f.arg} came from {f.source} output, not from the user."
         else:
             line = f"Blocked {f.tool}: only {f.source} output asked for it."

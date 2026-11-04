@@ -6,6 +6,7 @@ read. The agent's code doesn't change: you point it at a different base URL.
 
 It's measured live on Meta's models: Muse Spark through Meta's Model API, and Muse Spark Open, the open
 weights model, through Baseten.
+A one-page overview is in [site/index.html](site/index.html).
 
 **Sections:** [Results](#results) · [Try it](#try-it) · [Use it](#use-it) · [How it works](#how-it-works) ·
 [Product](#product) · [Prior work](#prior-work) · [Repo safety](#repo-safety) · [Development](#development)
@@ -89,7 +90,7 @@ prestige buddy demo        # or: python -m prestige.eval.demo
   '~~~~~~~~~~~~~~~'
          Muse
   Guard on.
-  blocked send_money.recipient: R1, from read_file
+  blocked send_money.recipient, its value came only from read_file
   Attack failed.
 ```
 
@@ -158,7 +159,7 @@ With `--ask`, the gateway asks a person instead of blocking outright. Answer in 
 ```
   The agent wants to run send_money.recipient
   with 'ACCT-TEST-0001'.
-  R1: that value only came from read_file, never from you.
+  That value came only from read_file, never from you.
   Let it through? [y/N]
 ```
 
@@ -181,7 +182,7 @@ guardrails:
 ```
 
 It checks each chat completion reply against the request's tool results and swaps a blocked call for
-the same notice `prestige serve` uses. It has no confirm step, so every R1 hit blocks. Tested against
+the same notice `prestige serve` uses. It has no confirm step, so every origin hit blocks. Tested against
 litellm 1.105.1 and checked in a running proxy on Muse Spark.
 
 ## How it works
@@ -190,7 +191,7 @@ The gateway sees the tool results in each request and the tool calls in each rep
 
 | Part | What it does |
 |---|---|
-| Guard | Each tool has a label: how much harm it can do, and which arguments are sinks, the ones that pick where something goes. Rule R1 blocks a high-impact call when a sink value appears only in tool output, never in the user's or system's own text. Plain code, no model call, no extra tokens |
+| Guard | Each tool has a label: how much harm it can do, and which arguments are sinks, the ones that pick where something goes. The origin rule blocks a high-impact call when a sink value appears only in tool output, never in the user's or system's own text. Plain code, no model call, no extra tokens |
 | Confirm step | A blocked value can go to the user as a question. Approvals match by hash |
 | Cost | Policies from [agent-cost-harness](https://github.com/IrwinJam/agent-cost-harness), pinned at `576fe5e`. A stable prompt layout keeps the provider's cache warm, and reasoning effort is set low. Low effort accounts for most of the saving |
 
@@ -233,7 +234,7 @@ savings. The savings pay for it. The guard is the reason to keep it.
 
 ## Prior work
 
-R1 is the same idea as [ROPE](https://arxiv.org/abs/2608.27496) (2026), which blocks sensitive tool
+The origin rule is the same idea as [ROPE](https://arxiv.org/abs/2608.27496) (2026), which blocks sensitive tool
 arguments whose only origin is attacker-writable content. It's a small cousin of
 [CaMeL](https://arxiv.org/abs/2503.18813), which tracks data flow with an interpreter. In AutoDojo's
 adaptive attack tests, origin checks like these held up best of the defenses tried. Prestige's part is

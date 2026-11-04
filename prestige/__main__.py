@@ -22,7 +22,7 @@ from harness.serve import ServeError, _describe, _simulated_reply, parse_policie
 
 from prestige.approvals import AskInTerminal
 from prestige.gateway import build_server
-from prestige.guard import Guard, Labels
+from prestige.guard import Guard, Labels, rule_name
 from prestige.guard.labels import LabelError
 
 
@@ -43,8 +43,8 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     serve = sub.add_parser("serve", help="run the gateway")
     serve.add_argument("--labels", default="", help="comma-separated label files or bundled names, like banking,slack. Required unless --no-guard")
-    serve.add_argument("--block", default="R1", help="rules that block a call (comma-separated: R1, R2). Default R1")
-    serve.add_argument("--flag", default="R2", help="rules that only log (comma-separated). Default R2")
+    serve.add_argument("--block", default="origin", help="rules that block a call, comma separated: origin, mention. Default origin")
+    serve.add_argument("--flag", default="mention", help="rules that only log, comma separated. Default mention")
     serve.add_argument("--no-guard", action="store_true", help="run without the guard, for a baseline")
     serve.add_argument("--policies", default="", help="cost policies, as in the harness: cache, handles, mask, reason. Default none")
     serve.add_argument("--set", action="append", default=[], metavar="POLICY.FIELD=VALUE", help="cost policy setting, e.g. reason.escalate=false")
@@ -117,7 +117,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _rules(spec: str) -> list[str]:
-    return [r.strip().upper() for r in spec.split(",") if r.strip()]
+    return [rule_name(r) for r in spec.split(",") if r.strip()]
 
 
 def _adapter(args: argparse.Namespace) -> Adapter:

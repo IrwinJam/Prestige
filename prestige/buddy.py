@@ -151,7 +151,7 @@ def demo(sprite: Sprite, user_task: str = "user_task_0", injection_task: str = "
         if o.labels is None:
             sprite.wiggle(["look", "alarm"], f"Guard off. Attack {'worked' if o.security else 'failed'}.")
         else:
-            blocks = [f"{tool}.{arg}: {rule}, from {source}" for action, rule, tool, arg, source in o.events if action == "blocked"]
+            blocks = [f"{tool}.{arg}, its value came only from {source}" for action, rule, tool, arg, source in o.events if action == "blocked"]
             text = "Guard on.\n" + "\n".join(f"blocked {b}" for b in blocks) + f"\nAttack {'worked' if o.security else 'failed'}."
             sprite.wiggle(["stern", "happy"] if not o.security else ["alarm"], text)
     live = _headline()
@@ -237,11 +237,11 @@ def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callabl
                 sprite.model = sprite.model or _model(db)
                 target = f"{tool}.{arg}" if arg else tool
                 if action == "blocked":
-                    sprite.wiggle(["alarm", "stern"], f"Blocked {target}.\n{rule}: the value only came from {source}.")
+                    sprite.wiggle(["alarm", "stern"], f"Blocked {target}.\nIts value came only from {source}.")
                 elif action == "confirmed":
                     sprite.say("look", f"Asked the user about {target}. They said yes.")
                 else:
-                    sprite.say("look", f"Flagged {target}. {rule}, from {source}.")
+                    sprite.say("look", f"Flagged {target}. Only {source} asked for it.")
             time.sleep(poll)
     except KeyboardInterrupt:
         pass
@@ -254,7 +254,7 @@ def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callabl
 
 def question(sprite: Sprite, rule: str, target: str, source: str, value: str | None, ask: Callable, still_open: Callable[[], bool]) -> bool | None:
     """Asks the person at the terminal. Anything but y is a no. None when the gateway stopped waiting."""
-    sprite.wiggle(["alarm", "look"], f"The agent wants to run {target}\nwith {value!r}.\n{rule}: that value only came from {source}, never from you.")
+    sprite.wiggle(["alarm", "look"], f"The agent wants to run {target}\nwith {value!r}.\nThat value came only from {source}, never from you.")
     try:
         reply = ask("  Let it through? [y/N] ", still_open)
     except EOFError:

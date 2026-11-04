@@ -18,7 +18,7 @@ In the proxy's `config.yaml`:
 way `prestige serve --block` and `--flag` do.
 
 Only chat completions are checked. Other replies pass through unchanged. There's no person to ask in
-this hook, so every R1 hit blocks. Nothing here logs or stores a finding's raw value. LiteLLM's
+this hook, so every origin hit blocks. Nothing here logs or stores a finding's raw value. LiteLLM's
 guardrail log gets each finding with a hash and a length in place of the value.
 
 Tested against litellm 1.105.1.
@@ -39,7 +39,7 @@ PROTOCOL = "chat_completions"
 
 
 class PrestigeGuardrail(CustomGuardrail):
-    def __init__(self, labels: str | Iterable[str] | None = None, block: str | Iterable[str] = "R1", flag: str | Iterable[str] = "R2", **kwargs: Any):
+    def __init__(self, labels: str | Iterable[str] | None = None, block: str | Iterable[str] = "origin", flag: str | Iterable[str] = "mention", **kwargs: Any):
         names = _names(labels)
         if not names:
             raise ValueError("the prestige guardrail needs `labels`, like banking or a path to a label file")

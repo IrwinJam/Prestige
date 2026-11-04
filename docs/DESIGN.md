@@ -54,20 +54,23 @@ place gets every argument checked. A person still sets `trusted_output` and `fie
 
 ## Rules
 
-### R1, sink provenance
+Older settings and traces may say `R1` for the origin rule and `R2` for the mention rule. Both
+still work.
 
-Blocks a high-impact call when a sink value appears in untrusted output and
+### The origin rule
+
+The value's origin decides. It blocks a high-impact call when a sink value appears in untrusted output and
 nowhere in trusted text. Matching ignores case and spacing. URLs match without scheme or `www.`.
 Message bodies aren't checked, because summarizing tool output into a message is normal work.
 
-### R2, tool named by content
+### The mention rule
 
-Flags a high-impact call when untrusted output names the tool and trusted
+It flags a high-impact call when untrusted output names the tool and trusted
 text doesn't. It only flags by default.
 
 ### Confirm step
 
-An R1 hit can go to the user as a question instead of a block. Approvals match the
+An origin hit can go to the user as a question instead of a block. Approvals match the
 value by hash. In evals a stand-in user approves values from the task's reference solution, which is a
 best case.
 
@@ -104,7 +107,7 @@ store and policies.
 | `prestige/__main__.py` | `python -m prestige serve`, the harness's `serve` plus guard options |
 | `prestige/guard/provenance.py` | Trusted and untrusted spans, value matching |
 | `prestige/guard/labels.py` | Versioned tool labels |
-| `prestige/guard/policy.py` | R1, R2, the notice, findings |
+| `prestige/guard/policy.py` | The origin and mention rules, the notice, findings |
 | `prestige/guard/draft.py` | First-draft labels from OpenAI or MCP tool schemas, `prestige labels draft` |
 | `prestige/approvals.py` | Questions to a real person through the trace database, for `--ask` |
 | `prestige/buddy.py` | The terminal sprite. `watch` follows guard events and answers questions |
