@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="210" viewBox="0 0 760 210" role="img" aria-label="Uncached input under Prestige, by cause">
+<title>Uncached input under Prestige, by cause</title>
+<style>
+  .fade { opacity: 0; animation: fade 0.5s ease-out forwards; }
+  .grow { transform-box: fill-box; transform-origin: left center; transform: scaleX(0); animation: grow 0.8s ease-out forwards; }
+  @keyframes fade { to { opacity: 1; } }
+  @keyframes grow { to { transform: scaleX(1); } }
+  @media (prefers-reduced-motion: reduce) { .fade, .grow { animation: none; opacity: 1; transform: none; } }
+</style>
+<rect width="760" height="210" fill="#fcfcfb"/>
+<text x="136.0" y="37.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Muse Spark 1.3</text>
+<text x="136.0" y="54.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#52514e" text-anchor="end">89% from cache</text>
+<rect x="150.0" y="24.0" width="87.3" height="28.0" rx="4" fill="#eda100" class="grow" style="animation-delay:0.00s"/>
+<text x="158.0" y="43.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start" class="fade" style="animation-delay:0.60s">16%</text>
+<rect x="239.3" y="24.0" width="260.6" height="28.0" rx="4" fill="#e87ba4" class="grow" style="animation-delay:0.25s"/>
+<text x="247.3" y="43.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start" class="fade" style="animation-delay:0.85s">46%</text>
+<rect x="501.9" y="24.0" width="216.1" height="28.0" rx="4" fill="#008300" class="grow" style="animation-delay:0.50s"/>
+<text x="509.9" y="43.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#fcfcfb" text-anchor="start" class="fade" style="animation-delay:1.10s">38%</text>
+<text x="136.0" y="101.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Muse Spark Open</text>
+<text x="136.0" y="118.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#52514e" text-anchor="end">92% from cache</text>
+<rect x="150.0" y="88.0" width="109.5" height="28.0" rx="4" fill="#eda100" class="grow" style="animation-delay:0.50s"/>
+<text x="158.0" y="107.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start" class="fade" style="animation-delay:1.10s">20%</text>
+<rect x="261.5" y="88.0" width="285.6" height="28.0" rx="4" fill="#e87ba4" class="grow" style="animation-delay:0.75s"/>
+<text x="269.5" y="107.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start" class="fade" style="animation-delay:1.35s">50%</text>
+<rect x="549.1" y="88.0" width="168.9" height="28.0" rx="4" fill="#008300" class="grow" style="animation-delay:1.00s"/>
+<text x="557.1" y="107.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#fcfcfb" text-anchor="start" class="fade" style="animation-delay:1.60s">30%</text>
+<rect x="150.0" y="160.0" width="12.0" height="12.0" rx="3" fill="#eda100"/>
+<text x="168.0" y="170.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">First call</text>
+<rect x="258.0" y="160.0" width="12.0" height="12.0" rx="3" fill="#e87ba4"/>
+<text x="276.0" y="170.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">New content</text>
+<rect x="372.6" y="160.0" width="12.0" height="12.0" rx="3" fill="#008300"/>
+<text x="390.6" y="170.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">Same prefix, not cached</text>
+<text x="150.0" y="196.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#52514e" text-anchor="start">Share of uncached input tokens</text>
+</svg>

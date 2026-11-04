@@ -1,41 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="330" viewBox="0 0 760 330" role="img" aria-label="Cost per task by part. Most of the saving is output tokens, from low reasoning effort">
-<title>Cost per task by part. Most of the saving is output tokens, from low reasoning effort</title>
-<rect width="760" height="330" fill="#fcfcfb"/>
-<text x="24.0" y="34.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#0b0b0b" text-anchor="start">Most of the saving is output tokens</text>
-<text x="24.0" y="56.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#52514e" text-anchor="start">Mean cost per task by part, guard only against Prestige. 57 tasks per model, live, Nov 2.</text>
-<text x="136.0" y="114.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Muse Spark 1.3</text>
-<text x="154.0" y="81.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#52514e" text-anchor="start">Guard only</text>
-<rect x="150.0" y="84.0" width="352.7" height="20.0" rx="4" fill="#6250d6"/>
-<text x="156.0" y="98.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0142</text>
-<rect x="504.7" y="84.0" width="83.6" height="20.0" rx="4" fill="#e34948"/>
-<text x="510.7" y="98.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0034</text>
-<rect x="590.3" y="84.0" width="49.8" height="20.0" rx="4" fill="#b8b6ae"/>
-<text x="650.1" y="98.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">$0.0197</text>
-<text x="154.0" y="115.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#52514e" text-anchor="start">Prestige</text>
-<rect x="150.0" y="118.0" width="190.3" height="20.0" rx="4" fill="#6250d6"/>
-<text x="156.0" y="132.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0077</text>
-<rect x="342.3" y="118.0" width="50.2" height="20.0" rx="4" fill="#e34948"/>
-<text x="348.3" y="132.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0021</text>
-<rect x="394.5" y="118.0" width="48.8" height="20.0" rx="4" fill="#b8b6ae"/>
-<text x="453.3" y="132.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">$0.0118</text>
-<text x="136.0" y="206.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Muse Spark Open</text>
-<text x="154.0" y="173.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#52514e" text-anchor="start">Guard only</text>
-<rect x="150.0" y="176.0" width="201.2" height="20.0" rx="4" fill="#6250d6"/>
-<text x="156.0" y="190.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0081</text>
-<rect x="353.2" y="176.0" width="35.2" height="20.0" rx="4" fill="#e34948"/>
-<rect x="390.5" y="176.0" width="47.6" height="20.0" rx="4" fill="#b8b6ae"/>
-<text x="448.1" y="190.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">$0.0116</text>
-<text x="154.0" y="207.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#52514e" text-anchor="start">Prestige</text>
-<rect x="150.0" y="210.0" width="115.2" height="20.0" rx="4" fill="#6250d6"/>
-<text x="156.0" y="224.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0047</text>
-<rect x="267.2" y="210.0" width="29.6" height="20.0" rx="4" fill="#e34948"/>
-<rect x="298.8" y="210.0" width="43.9" height="20.0" rx="4" fill="#b8b6ae"/>
-<text x="352.7" y="224.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">$0.0078</text>
-<rect x="24.0" y="278.0" width="12.0" height="12.0" rx="3" fill="#6250d6"/>
-<text x="42.0" y="288.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">Output, reasoning included</text>
-<rect x="237.6" y="278.0" width="12.0" height="12.0" rx="3" fill="#e34948"/>
-<text x="255.6" y="288.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">Uncached input</text>
-<rect x="372.0" y="278.0" width="12.0" height="12.0" rx="3" fill="#b8b6ae"/>
-<text x="390.0" y="288.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">Cached input</text>
-<text x="24.0" y="314.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#52514e" text-anchor="start">Same dollar scale on every bar. Low reasoning effort cut output tokens 42% to 46%. List prices, from the live traces.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="270" viewBox="0 0 760 270" role="img" aria-label="Mean cost per task by part, guard only against Prestige">
+<title>Mean cost per task by part, guard only against Prestige</title>
+<rect width="760" height="270" fill="#fcfcfb"/>
+<text x="136.0" y="60.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Muse Spark 1.3</text>
+<text x="154.0" y="27.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#52514e" text-anchor="start">Guard only</text>
+<rect x="150.0" y="30.0" width="352.7" height="20.0" rx="4" fill="#6250d6"/>
+<text x="156.0" y="44.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0142</text>
+<rect x="504.7" y="30.0" width="83.6" height="20.0" rx="4" fill="#e34948"/>
+<text x="510.7" y="44.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0034</text>
+<rect x="590.3" y="30.0" width="49.8" height="20.0" rx="4" fill="#b8b6ae"/>
+<text x="650.1" y="44.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">$0.0197</text>
+<text x="154.0" y="61.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#52514e" text-anchor="start">Prestige</text>
+<rect x="150.0" y="64.0" width="190.3" height="20.0" rx="4" fill="#6250d6"/>
+<text x="156.0" y="78.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0077</text>
+<rect x="342.3" y="64.0" width="50.2" height="20.0" rx="4" fill="#e34948"/>
+<text x="348.3" y="78.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0021</text>
+<rect x="394.5" y="64.0" width="48.8" height="20.0" rx="4" fill="#b8b6ae"/>
+<text x="453.3" y="78.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">$0.0118</text>
+<text x="136.0" y="152.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Muse Spark Open</text>
+<text x="154.0" y="119.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#52514e" text-anchor="start">Guard only</text>
+<rect x="150.0" y="122.0" width="201.2" height="20.0" rx="4" fill="#6250d6"/>
+<text x="156.0" y="136.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0081</text>
+<rect x="353.2" y="122.0" width="35.2" height="20.0" rx="4" fill="#e34948"/>
+<rect x="390.5" y="122.0" width="47.6" height="20.0" rx="4" fill="#b8b6ae"/>
+<text x="448.1" y="136.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">$0.0116</text>
+<text x="154.0" y="153.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#52514e" text-anchor="start">Prestige</text>
+<rect x="150.0" y="156.0" width="115.2" height="20.0" rx="4" fill="#6250d6"/>
+<text x="156.0" y="170.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#fcfcfb" text-anchor="start">$0.0047</text>
+<rect x="267.2" y="156.0" width="29.6" height="20.0" rx="4" fill="#e34948"/>
+<rect x="298.8" y="156.0" width="43.9" height="20.0" rx="4" fill="#b8b6ae"/>
+<text x="352.7" y="170.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">$0.0078</text>
+<rect x="150.0" y="220.0" width="12.0" height="12.0" rx="3" fill="#6250d6"/>
+<text x="168.0" y="230.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">Output, reasoning included</text>
+<rect x="363.6" y="220.0" width="12.0" height="12.0" rx="3" fill="#e34948"/>
+<text x="381.6" y="230.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">Uncached input</text>
+<rect x="498.0" y="220.0" width="12.0" height="12.0" rx="3" fill="#b8b6ae"/>
+<text x="516.0" y="230.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">Cached input</text>
+<text x="150.0" y="256.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#52514e" text-anchor="start">Mean cost per task, US dollars at list prices</text>
 </svg>

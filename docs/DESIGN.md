@@ -75,7 +75,7 @@ value by hash. In evals a stand-in user approves values from the task's referenc
 best case.
 
 With `serve --ask` or `live --ask`, a real person answers instead. The gateway writes the question to an
-`approvals` table in the trace database and waits. `prestige buddy watch` shows the value and where it
+`approvals` table in the trace database and waits. `prestige assistant watch` shows the value and where it
 came from, and writes back yes or no. No answer before `--ask-timeout`, 120 seconds by
 default, counts as no. The value is shown printable and cut to 80 characters, since it may come from an
 attacker, and it's wiped from the table as soon as the question is answered or times out. The code is
@@ -110,7 +110,7 @@ store and policies.
 | `prestige/guard/policy.py` | The origin and mention rules, the notice, findings |
 | `prestige/guard/draft.py` | First-draft labels from OpenAI or MCP tool schemas, `prestige labels draft` |
 | `prestige/approvals.py` | Questions to a real person through the trace database, for `--ask` |
-| `prestige/buddy.py` | The terminal sprite. `watch` follows guard events and answers questions |
+| `prestige/assistant.py` | The terminal sprite. `watch` follows guard events and answers questions |
 | `prestige/integrations/litellm.py` | The guard as a LiteLLM proxy guardrail |
 | `prestige/eval/agentdojo.py` | AgentDojo through the gateway, one pair at a time |
 | `prestige/eval/published.py` | AutoDojo's published injections, read at run time |

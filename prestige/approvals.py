@@ -1,10 +1,10 @@
 """A person approves blocked calls from another terminal.
 
     python -m prestige serve --labels banking --muse --ask ...
-    python -m prestige buddy watch --db runs/prestige.sqlite
+    python -m prestige assistant watch --db runs/prestige.sqlite
 
 When the guard would block a call, the gateway writes a question to the trace database and waits.
-`buddy watch` shows it and writes the answer back. No answer before the timeout means no.
+`assistant watch` shows it and writes the answer back. No answer before the timeout means no.
 
 The question holds the value so the person can judge it. It's wiped as soon as the answer comes in,
 so the database keeps only the tool and the answer, with times.
@@ -49,7 +49,7 @@ def shown(value: str | None) -> str:
 
 
 class AskInTerminal:
-    """A session approver that waits for an answer from `buddy watch`."""
+    """A session approver that waits for an answer from `assistant watch`."""
 
     def __init__(self, db: str | Path, timeout: float = 120.0, poll: float = 0.25):
         self.db, self.timeout, self.poll = str(db), timeout, poll

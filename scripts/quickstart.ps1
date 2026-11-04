@@ -11,4 +11,4 @@ $py = Join-Path ".venv" "Scripts\python.exe"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $py -m pytest -q
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& $py -m prestige buddy demo
+& $py -m prestige assistant demo

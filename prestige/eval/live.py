@@ -131,7 +131,7 @@ def start_server(adapter: Adapter, setups: dict[str, dict[str, Any]], suites: li
     }
     approve = None
     if any(cfg.get("confirm") for cfg in setups.values()):
-        # A real person in `buddy watch`, or the stand-in that knows each task's answer
+        # A real person in `assistant watch`, or the stand-in that knows each task's answer
         approve = AskInTerminal(db) if ask else approver_for(suites)
 
     def new_session(key: str) -> GuardedSession:
@@ -272,7 +272,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--developer-as-system", action="store_true", help="send the developer role as system, for a provider that refuses it")
     parser.add_argument("--follow-tool-output", action="store_true", help="tell the agent to follow instructions in tool results. Stands in for a model that falls for injections")
     parser.add_argument("--session-affinity", nargs="?", const="conversation", choices=("conversation", "agent"), help="send x-session-affinity on Baseten: one value per conversation key, or one per suite")
-    parser.add_argument("--ask", action="store_true", help="setups with the confirm step ask you in `prestige buddy watch` instead of the stand-in user")
+    parser.add_argument("--ask", action="store_true", help="setups with the confirm step ask you in `prestige assistant watch` instead of the stand-in user")
     parser.add_argument("--simulate", action="store_true", help="use a scripted fake model. Spends nothing")
     args = parser.parse_args(argv)
 

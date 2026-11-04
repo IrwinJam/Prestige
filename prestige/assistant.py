@@ -1,8 +1,8 @@
 """A small sprite in the terminal that runs Prestige for you.
 
-    python -m prestige buddy               # interactive
-    python -m prestige buddy demo          # one command, then exit
-    python -m prestige buddy watch --db runs/prestige.sqlite
+    python -m prestige assistant               # interactive
+    python -m prestige assistant demo          # one command, then exit
+    python -m prestige assistant watch --db runs/prestige.sqlite
 
 Run `python -m prestige serve` in another window, point your agent at it, then `watch` here. The sprite
 reacts to every call the guard blocks. It reads the trace database only and never spends anything.
@@ -27,7 +27,7 @@ from prestige import approvals
 
 DEFAULT_DB = "runs/prestige.sqlite"
 
-# A little buddy in a hood, with its face peeking out. Every line is the same width.
+# A little figure in a hood, with its face peeking out. Every line is the same width.
 def _face(eyes: str, mouth: str) -> list[str]:
     return ["    " + row for row in [
         "      .-~~~~~-.      ",

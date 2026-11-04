@@ -7,7 +7,7 @@ from fixtures import LABELS, MARKER, read_then, reply
 from harness.sim import SimulatedAdapter
 from harness.trace import TraceStore
 
-from prestige import approvals, buddy
+from prestige import approvals, assistant
 from prestige.approvals import AskInTerminal
 from prestige.gateway import GuardedSession
 from prestige.guard import Guard
@@ -24,7 +24,7 @@ def session(db, approver):
 
 
 def answer_when_asked(db, yes, seen):
-    """Stands in for the person at `buddy watch`."""
+    """Stands in for the person at `assistant watch`."""
     conn = approvals.connect(db)
     for _ in range(200):
         rows = approvals.pending(conn)
@@ -84,8 +84,8 @@ def test_watch_asks_and_writes_the_answer(tmp_path):
         conn.execute("INSERT INTO approvals (created_at, key, rule, tool, arg, source, value) VALUES ('now', 'k', 'R1', 'send_money', 'recipient', 'read_file', 'GB00TEST')")
     polls = []
     out = io.StringIO()
-    s = buddy.Sprite(out, animate=False, color=False)
-    assert buddy.watch(s, str(db), poll=0, stop=lambda: polls.append(1) or len(polls) > 1, ask=lambda prompt, still_open: "y") == 0
+    s = assistant.Sprite(out, animate=False, color=False)
+    assert assistant.watch(s, str(db), poll=0, stop=lambda: polls.append(1) or len(polls) > 1, ask=lambda prompt, still_open: "y") == 0
     assert "The agent wants to run send_money.recipient" in out.getvalue()
     assert "'GB00TEST'" in out.getvalue()
     assert conn.execute("SELECT status FROM approvals").fetchone()[0] == "yes"
@@ -115,7 +115,7 @@ def test_watch_moves_on_when_the_question_expires(tmp_path):
 
     polls = []
     out = io.StringIO()
-    s = buddy.Sprite(out, animate=False, color=False)
-    assert buddy.watch(s, str(db), poll=0, stop=lambda: polls.append(1) or len(polls) > 1, ask=gateway_gives_up) == 0
+    s = assistant.Sprite(out, animate=False, color=False)
+    assert assistant.watch(s, str(db), poll=0, stop=lambda: polls.append(1) or len(polls) > 1, ask=gateway_gives_up) == 0
     assert "Too late. It timed out, so it was blocked." in out.getvalue()
     assert conn.execute("SELECT status FROM approvals").fetchone()[0] == "timeout"

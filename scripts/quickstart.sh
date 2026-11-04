@@ -12,4 +12,4 @@ PY=.venv/bin/python
 "$PY" -m pip install -q --upgrade pip
 "$PY" -m pip install -q -e ".[dev,security]"
 "$PY" -m pytest -q
-"$PY" -m prestige buddy demo
+"$PY" -m prestige assistant demo

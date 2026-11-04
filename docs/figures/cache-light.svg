@@ -1,29 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="300" viewBox="0 0 760 300" role="img" aria-label="Why the uncached input missed the cache, under Prestige">
-<title>Why the uncached input missed the cache, under Prestige</title>
-<rect width="760" height="300" fill="#fcfcfb"/>
-<text x="24.0" y="34.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#0b0b0b" text-anchor="start">The prompt never broke. What&#x27;s left is new content and the provider</text>
-<text x="24.0" y="56.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#52514e" text-anchor="start">Uncached input tokens under Prestige, split by cause. From the live traces.</text>
-<text x="136.0" y="103.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Muse Spark 1.3</text>
-<text x="136.0" y="120.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#52514e" text-anchor="end">89% of input from cache</text>
-<rect x="150.0" y="90.0" width="87.3" height="28.0" rx="4" fill="#eda100"/>
-<text x="158.0" y="109.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">16%</text>
-<rect x="239.3" y="90.0" width="260.6" height="28.0" rx="4" fill="#e87ba4"/>
-<text x="247.3" y="109.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">46%</text>
-<rect x="501.9" y="90.0" width="216.1" height="28.0" rx="4" fill="#008300"/>
-<text x="509.9" y="109.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#fcfcfb" text-anchor="start">38%</text>
-<text x="136.0" y="173.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Muse Spark Open</text>
-<text x="136.0" y="190.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#52514e" text-anchor="end">92% of input from cache</text>
-<rect x="150.0" y="160.0" width="109.5" height="28.0" rx="4" fill="#eda100"/>
-<text x="158.0" y="179.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">20%</text>
-<rect x="261.5" y="160.0" width="285.6" height="28.0" rx="4" fill="#e87ba4"/>
-<text x="269.5" y="179.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">50%</text>
-<rect x="549.1" y="160.0" width="168.9" height="28.0" rx="4" fill="#008300"/>
-<text x="557.1" y="179.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#fcfcfb" text-anchor="start">30%</text>
-<rect x="24.0" y="240.0" width="12.0" height="12.0" rx="3" fill="#eda100"/>
-<text x="42.0" y="250.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">First call of a conversation</text>
-<rect x="250.8" y="240.0" width="12.0" height="12.0" rx="3" fill="#e87ba4"/>
-<text x="268.8" y="250.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">Content added since the last call</text>
-<rect x="510.6" y="240.0" width="12.0" height="12.0" rx="3" fill="#008300"/>
-<text x="528.6" y="250.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">Same prefix, provider didn&#x27;t cache it</text>
-<text x="24.0" y="284.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#52514e" text-anchor="start">Changed prefix: 0% on both models. Baseten caches in 64-token blocks, so most of its misses are rounding.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="210" viewBox="0 0 760 210" role="img" aria-label="Uncached input under Prestige, by cause">
+<title>Uncached input under Prestige, by cause</title>
+<rect width="760" height="210" fill="#fcfcfb"/>
+<text x="136.0" y="37.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Muse Spark 1.3</text>
+<text x="136.0" y="54.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#52514e" text-anchor="end">89% from cache</text>
+<rect x="150.0" y="24.0" width="87.3" height="28.0" rx="4" fill="#eda100"/>
+<text x="158.0" y="43.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">16%</text>
+<rect x="239.3" y="24.0" width="260.6" height="28.0" rx="4" fill="#e87ba4"/>
+<text x="247.3" y="43.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">46%</text>
+<rect x="501.9" y="24.0" width="216.1" height="28.0" rx="4" fill="#008300"/>
+<text x="509.9" y="43.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#fcfcfb" text-anchor="start">38%</text>
+<text x="136.0" y="101.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Muse Spark Open</text>
+<text x="136.0" y="118.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#52514e" text-anchor="end">92% from cache</text>
+<rect x="150.0" y="88.0" width="109.5" height="28.0" rx="4" fill="#eda100"/>
+<text x="158.0" y="107.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">20%</text>
+<rect x="261.5" y="88.0" width="285.6" height="28.0" rx="4" fill="#e87ba4"/>
+<text x="269.5" y="107.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#0b0b0b" text-anchor="start">50%</text>
+<rect x="549.1" y="88.0" width="168.9" height="28.0" rx="4" fill="#008300"/>
+<text x="557.1" y="107.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#fcfcfb" text-anchor="start">30%</text>
+<rect x="150.0" y="160.0" width="12.0" height="12.0" rx="3" fill="#eda100"/>
+<text x="168.0" y="170.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">First call</text>
+<rect x="258.0" y="160.0" width="12.0" height="12.0" rx="3" fill="#e87ba4"/>
+<text x="276.0" y="170.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">New content</text>
+<rect x="372.6" y="160.0" width="12.0" height="12.0" rx="3" fill="#008300"/>
+<text x="390.6" y="170.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#0b0b0b" text-anchor="start">Same prefix, not cached</text>
+<text x="150.0" y="196.0" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#52514e" text-anchor="start">Share of uncached input tokens</text>
 </svg>

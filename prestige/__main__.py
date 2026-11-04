@@ -60,12 +60,12 @@ def main(argv: list[str] | None = None) -> int:
     serve.add_argument("--muse", action="store_true", help="use Meta's Model API for Muse")
     serve.add_argument("--simulate", action="store_true", help="answer with the offline simulator instead of a real provider")
     serve.add_argument("--session-affinity", nargs="?", const="conversation", choices=("conversation", "agent"), help="send x-session-affinity for more cache hits on Baseten: one value per conversation, or one per agent (every conversation through this gateway)")
-    serve.add_argument("--ask", action="store_true", help="ask a person in `prestige buddy watch` before blocking a call")
+    serve.add_argument("--ask", action="store_true", help="ask a person in `prestige assistant watch` before blocking a call")
     serve.add_argument("--ask-timeout", type=float, default=120.0, help="seconds to wait for an answer. No answer means no")
     labels = sub.add_parser("labels", help="draft labels for your own tools: prestige labels draft tools.json")
     labels.add_argument("words", nargs=argparse.REMAINDER, help="draft TOOLS.json")
-    buddy = sub.add_parser("buddy", help="a sprite in the terminal that runs the demo and watches the guard")
-    buddy.add_argument("words", nargs=argparse.REMAINDER, help="one command to run, like demo or watch. None: interactive")
+    assistant = sub.add_parser("assistant", aliases=["buddy"], help="a sprite in the terminal that runs the demo and watches the guard")
+    assistant.add_argument("words", nargs=argparse.REMAINDER, help="one command to run, like demo or watch. None: interactive")
     args = parser.parse_args(argv)
     if args.command == "labels":
         from prestige.guard import draft
@@ -74,8 +74,8 @@ def main(argv: list[str] | None = None) -> int:
             print("usage: prestige labels draft TOOLS.json", file=sys.stderr)
             return 2
         return draft.main(args.words[1:])
-    if args.command == "buddy":
-        from prestige import buddy as sprite
+    if args.command in ("assistant", "buddy"):
+        from prestige import assistant as sprite
 
         return sprite.main(args.words)
 
@@ -98,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
     policies = ", ".join(n for n, _ in chain) or "none"
     guard_desc = f"block {sorted(guard.block) or 'nothing'}, flag {sorted(guard.flag) or 'nothing'}" if guard else "off"
     if approver:
-        guard_desc += f", ask in `prestige buddy watch --db {args.db}` first"
+        guard_desc += f", ask in `prestige assistant watch --db {args.db}` first"
     print(f"prestige serving on {server.proxy.base_url}  (guard: {guard_desc}; cost policies: {policies}{'; SIMULATED' if args.simulate else ''})")
     print(f"  OpenAI base URL per conversation: {server.proxy.base_url}/s/<key>/v1")
     print(f"  limits: {_describe(limit, args.budget)}")

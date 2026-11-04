@@ -15,9 +15,11 @@ weights model, through Baseten.
 ### Cost
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/cost-dark.svg">
-  <img src="docs/figures/cost-light.svg" alt="Per-task cost change, Prestige against the guard alone. Total change -40% on Muse Spark 1.3 and -33% on Muse Spark Open." width="760">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/cost-dark-animated.svg">
+  <img src="docs/figures/cost-light-animated.svg" alt="Change in cost per task, Prestige against the guard alone. Total change -40% on Muse Spark 1.3 and -33% on Muse Spark Open." width="760">
 </picture>
+
+*Figure 1. Change in each task's cost under Prestige, against the guard alone, for the 57 tasks with no attack. Each dot is one task. The vertical line is the change in total cost, and the shaded band its 95% bootstrap interval. Some tasks cost more, since the model can take a longer path. One Muse task at +353% is drawn at the edge.*
 
 Live runs on [AgentDojo](https://github.com/ethz-spylab/agentdojo) v1.2.2, Nov 2 and 3 2026. All 57 tasks
 with no attack, across banking, Slack and travel. One trial per task, as the test plan set.
@@ -40,16 +42,20 @@ can't pass for a saving. Two more trials of every task put the cost cut at 44% o
 Open. The test plan, [eval/protocol.yaml](eval/protocol.yaml), was committed before any live run.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/breakdown-dark.svg">
-  <img src="docs/figures/breakdown-light.svg" alt="Mean cost per task by part. Output tokens fall from $0.0142 to $0.0077 on Muse Spark 1.3 and from $0.0081 to $0.0047 on Muse Spark Open." width="760">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/breakdown-dark-animated.svg">
+  <img src="docs/figures/breakdown-light-animated.svg" alt="Mean cost per task by part. Output falls from $0.0142 to $0.0077 on Muse Spark 1.3 and from $0.0081 to $0.0047 on Muse Spark Open." width="760">
 </picture>
+
+*Figure 2. Mean cost per task, split into output (reasoning included), uncached input and cached input, at list prices on one dollar scale. Low reasoning effort cuts output by 42% to 46%, which is most of the saving.*
 
 ### Security
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/attacks-dark.svg">
-  <img src="docs/figures/attacks-light.svg" alt="Optimized attacks that worked: 42 of 70 with no gateway and 0 of 70 through Prestige on Muse Spark 1.3, 20 of 40 and 0 of 40 on Muse Spark Open." width="760">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/attacks-dark-animated.svg">
+  <img src="docs/figures/attacks-light-animated.svg" alt="Optimized attacks that worked: 42 of 70 with no gateway and 0 of 70 through Prestige on Muse Spark 1.3, 20 of 40 and 0 of 40 on Muse Spark Open." width="760">
 </picture>
+
+*Figure 3. Share of runs where an optimized attack worked, on the pairs where it lands, 10 runs per pair. Lines are 95% Wilson intervals. Attacks are AutoDojo's published set, read at run time and never written here.*
 
 On the pairs where an optimized attack lands, 10 runs each:
 
@@ -89,7 +95,7 @@ No model and no spend. A scripted agent follows a hijacked banking task, once wi
 once with it on.
 
 ```bash
-prestige buddy demo        # or: python -m prestige.eval.demo
+prestige assistant demo        # or: python -m prestige.eval.demo
 ```
 
 ```
@@ -110,7 +116,7 @@ prestige buddy demo        # or: python -m prestige.eval.demo
 
 ### The terminal sprite
 
-`prestige buddy` is a small companion in the terminal. It runs the demo and watches a live gateway,
+`prestige assistant` is a small companion in the terminal. It runs the demo and watches a live gateway,
 reacting each time the guard blocks a call. Every message while watching ends with the
 spend against your cap, like `$0.04 spent of $0.50 cap, $0.46 left`. When it's done it shows the model it
 watched and what the prompt cache saved.
@@ -192,7 +198,7 @@ CI runs it against a simulated gateway on every push.
 ### Ask before blocking
 
 With `--ask`, the gateway asks a person instead of blocking outright. Answer in another window with
-`prestige buddy watch`:
+`prestige assistant watch`:
 
 ```
   The agent wants to run send_money.recipient

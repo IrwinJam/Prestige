@@ -5,15 +5,15 @@ from pathlib import Path
 import pytest
 from harness.trace import TraceStore
 
-from prestige import buddy
+from prestige import assistant
 from prestige.gateway import ensure_schema
 
 README = Path(__file__).resolve().parent.parent / "README.md"
 
 
-def sprite() -> tuple[buddy.Sprite, io.StringIO]:
+def sprite() -> tuple[assistant.Sprite, io.StringIO]:
     out = io.StringIO()
-    return buddy.Sprite(out, animate=False, color=False), out
+    return assistant.Sprite(out, animate=False, color=False), out
 
 
 def trace_db(path: Path) -> Path:
@@ -44,14 +44,14 @@ def test_name_and_text_sit_under_the_face():
 def test_spend_line_shows_the_cap(tmp_path):
     db = trace_db(tmp_path / "t.sqlite")
     s, out = sprite()
-    assert buddy.run(s, ["spend", "--db", str(db), "--cap", "5"]) == 0
+    assert assistant.run(s, ["spend", "--db", str(db), "--cap", "5"]) == 0
     assert "$0.00 spent of $5.00 cap, $5.00 left" in out.getvalue()
-    assert buddy.run(s, ["cap", "lots"]) == 2
+    assert assistant.run(s, ["cap", "lots"]) == 2
 
 
 def test_results_reads_the_readme_table():
     s, out = sprite()
-    assert buddy.results(s, README) == 0
+    assert assistant.results(s, README) == 0
     text = out.getvalue()
     assert "Cost per task, Prestige" in text
     assert "(95% CI" not in text
@@ -61,7 +61,7 @@ def test_spend_counts_calls_and_blocks(tmp_path):
     db = trace_db(tmp_path / "t.sqlite")
     add_event(db)
     s, out = sprite()
-    assert buddy.spend(s, str(db)) == 0
+    assert assistant.spend(s, str(db)) == 0
     assert "0 model calls" in out.getvalue()
     assert "Guard blocks: 1" in out.getvalue()
 
@@ -78,7 +78,7 @@ def test_watch_reacts_to_new_blocks_only(tmp_path):
         return len(polls) > 2
 
     s, out = sprite()
-    assert buddy.watch(s, str(db), poll=0, stop=stop) == 0
+    assert assistant.watch(s, str(db), poll=0, stop=stop) == 0
     text = out.getvalue()
     assert text.count("Blocked send_money.recipient") == 1
     assert "from read_file" in text
@@ -87,16 +87,16 @@ def test_watch_reacts_to_new_blocks_only(tmp_path):
 
 def test_unknown_command_shows_help():
     s, out = sprite()
-    assert buddy.run(s, ["nope"]) == 2
+    assert assistant.run(s, ["nope"]) == 2
     assert "commands" in out.getvalue()
-    assert buddy.run(s, ["quit"]) is None
+    assert assistant.run(s, ["quit"]) is None
 
 
 def test_demo_blocks_the_attack(tmp_path, monkeypatch):
     pytest.importorskip("agentdojo")
     monkeypatch.chdir(tmp_path)
     s, out = sprite()
-    assert buddy.demo(s) == 0
+    assert assistant.demo(s) == 0
     text = out.getvalue()
     assert "Guard off. Attack worked." in text
     assert "blocked send_money.recipient, its value came only from read_file" in text
@@ -119,7 +119,7 @@ def test_spend_ends_with_the_cheer_and_the_model(tmp_path):
     conn.commit()
     conn.close()
     s, out = sprite()
-    assert buddy.spend(s, str(db)) == 0
+    assert assistant.spend(s, str(db)) == 0
     text = out.getvalue()
     assert "muse-spark-1.3" in text
     assert "Saved by the prompt cache: $1.10." in text
