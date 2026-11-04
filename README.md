@@ -69,6 +69,23 @@ guard on, labels v3
 
 Offline, with a scripted agent. No model and no spend.
 
+Or run it through the sprite, which also watches a live gateway and reacts when the guard blocks a call:
+
+```bash
+.venv/Scripts/python -m prestige buddy
+```
+
+```
+   .-^-.    __________________________________________________
+  ( ^ ^ )  | Guard on.                                        |
+  /| v |\  | blocked send_money.recipient: R1, from read_file |
+   '-=-'   | Attack failed.                                   |
+            --------------------------------------------------
+```
+
+Commands: `demo`, `results`, `watch` (follows guard events while `serve` runs), `spend`, `serve`, `help`.
+It only reads the trace database and never shows a blocked value.
+
 ## Use it
 
 ```bash

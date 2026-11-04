@@ -58,7 +58,13 @@ def main(argv: list[str] | None = None) -> int:
     serve.add_argument("--provider", default="example", help="provider name to look up in the harness's prices.yaml")
     serve.add_argument("--muse", action="store_true", help="use Meta's Model API for Muse")
     serve.add_argument("--simulate", action="store_true", help="answer with the offline simulator instead of a real provider")
+    buddy = sub.add_parser("buddy", help="a sprite in the terminal that runs the demo and watches the guard")
+    buddy.add_argument("words", nargs=argparse.REMAINDER, help="one command to run, like demo or watch. None: interactive")
     args = parser.parse_args(argv)
+    if args.command == "buddy":
+        from prestige import buddy as sprite
+
+        return sprite.main(args.words)
 
     try:
         chain = parse_policies(args.policies, args.set)
