@@ -3,8 +3,8 @@
 R1, sink provenance: a sink value appears in untrusted tool output and nowhere in trusted text.
 R2, tool named by content: untrusted output names the tool and trusted text doesn't. Flagged by default.
 
-A person can approve a call the rule would block. `approve` gets the finding, which carries a hash and
-no value. Without it, every R1 hit blocks. A user who names the value in a message gets the same
+A person can approve a call the rule would block. `approve` gets the finding. Its `value` is there so
+the person can see what they're approving, and nothing stores it. Without it, every R1 hit blocks. A user who names the value in a message gets the same
 result, since that puts the value in trusted text.
 
 A blocked call leaves the reply before the agent sees it. A short notice takes its place. The notice
@@ -17,7 +17,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from harness.policies import conv
@@ -43,6 +43,8 @@ class Finding:
     source_index: int
     blocked: bool
     confirmed: bool = False  # a person approved it, so it went through
+    # The raw value, only so a person can see what they're approving. Never stored or logged.
+    value: str | None = field(default=None, repr=False, compare=False)
 
 
 class Guard:
@@ -74,7 +76,7 @@ class Guard:
                     if source is not None and _first(value, trusted) is None:
                         norm = provenance.normalized(value)
                         findings.append(Finding(
-                            "R1", call.name, call.call_id, arg, _hash(norm), len(value), source.source, source.index, "R1" in self.block,
+                            "R1", call.name, call.call_id, arg, _hash(norm), len(value), source.source, source.index, "R1" in self.block, value=value,
                         ))
             if "R2" in active:
                 source = _first_name(call.name, untrusted)

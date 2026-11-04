@@ -20,6 +20,7 @@ from harness.adapters.base import Adapter
 from harness.budget import SpendLimit
 from harness.serve import ServeError, _describe, _simulated_reply, parse_policies
 
+from prestige.approvals import AskInTerminal
 from prestige.gateway import build_server
 from prestige.guard import Guard, Labels
 from prestige.guard.labels import LabelError
@@ -58,6 +59,8 @@ def main(argv: list[str] | None = None) -> int:
     serve.add_argument("--provider", default="example", help="provider name to look up in the harness's prices.yaml")
     serve.add_argument("--muse", action="store_true", help="use Meta's Model API for Muse")
     serve.add_argument("--simulate", action="store_true", help="answer with the offline simulator instead of a real provider")
+    serve.add_argument("--ask", action="store_true", help="ask a person in `prestige buddy watch` before blocking a call")
+    serve.add_argument("--ask-timeout", type=float, default=120.0, help="seconds to wait for an answer. No answer means no")
     buddy = sub.add_parser("buddy", help="a sprite in the terminal that runs the demo and watches the guard")
     buddy.add_argument("words", nargs=argparse.REMAINDER, help="one command to run, like demo or watch. None: interactive")
     args = parser.parse_args(argv)
@@ -80,9 +83,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
-    server = build_server(adapter, chain=chain, guard=guard, db=args.db, port=args.port, budget_usd=args.budget, limit=limit, host=os.environ.get("HARNESS_HOST", "127.0.0.1"))
+    approver = AskInTerminal(args.db, args.ask_timeout) if args.ask and guard else None
+    server = build_server(adapter, chain=chain, guard=guard, db=args.db, port=args.port, budget_usd=args.budget, limit=limit, host=os.environ.get("HARNESS_HOST", "127.0.0.1"), approver=approver)
     policies = ", ".join(n for n, _ in chain) or "none"
     guard_desc = f"block {sorted(guard.block) or 'nothing'}, flag {sorted(guard.flag) or 'nothing'}" if guard else "off"
+    if approver:
+        guard_desc += f", ask in `prestige buddy watch --db {args.db}` first"
     print(f"prestige serving on {server.proxy.base_url}  (guard: {guard_desc}; cost policies: {policies}{'; SIMULATED' if args.simulate else ''})")
     print(f"  OpenAI base URL per conversation: {server.proxy.base_url}/s/<key>/v1")
     print(f"  limits: {_describe(limit, args.budget)}")

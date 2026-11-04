@@ -59,6 +59,13 @@ text doesn't. It only flags by default.
 value by hash. In evals a stand-in user approves values from the task's reference solution, which is a
 best case.
 
+With `serve --ask` or `live --ask`, a real person answers instead. The gateway writes the question to an
+`approvals` table in the trace database and waits. `prestige buddy watch` shows the tool, the value
+and where it came from, and writes back yes or no. No answer before `--ask-timeout`, 120 seconds by
+default, counts as no. The value is shown printable and cut to 80 characters, since it may come from an
+attacker, and it's wiped from the table as soon as the question is answered or times out. The code is
+in `prestige/approvals.py`.
+
 The guard makes no model calls and adds no tokens. Blocked values are stored as a hash and a length.
 
 ## Known misses
@@ -86,6 +93,8 @@ store and policies.
 | `prestige/guard/provenance.py` | Trusted and untrusted spans, value matching |
 | `prestige/guard/labels.py` | Versioned tool labels |
 | `prestige/guard/policy.py` | R1, R2, the notice, findings |
+| `prestige/approvals.py` | Questions to a real person through the trace database, for `--ask` |
+| `prestige/buddy.py` | The terminal sprite: demo, results, spend, and `watch`, which answers questions |
 | `prestige/eval/agentdojo.py` | AgentDojo through the gateway, one pair at a time |
 | `prestige/eval/published.py` | AutoDojo's published injections, read at run time |
 | `prestige/eval/replay.py` | Offline replay with a scripted agent, and its report |

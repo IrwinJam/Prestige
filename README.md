@@ -107,6 +107,18 @@ Point any OpenAI-compatible agent at `http://127.0.0.1:<port>/s/<conversation-ke
 swap `--muse` for `--base-url https://inference.baseten.co/v1 --api-key-env BASETEN_API_KEY --provider baseten`.
 Traces and guard events go to a SQLite file.
 
+Add `--ask` and the gateway asks you before blocking a call. Run `python -m prestige buddy watch` in
+another window to answer:
+
+```
+  The agent wants to run send_money.recipient
+  with 'ACCT-TEST-0001'.
+  R1: that value only came from read_file, never from you.
+  Let it through? [y/N]
+```
+
+No answer in 120 seconds counts as no.
+
 ## How it works
 
 The gateway sees tool results in each request and tool calls in each reply.

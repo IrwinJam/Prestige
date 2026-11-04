@@ -21,6 +21,8 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
+from prestige import approvals
+
 DEFAULT_DB = "runs/prestige.sqlite"
 
 # A little buddy in a hood, with its face peeking out. Every line is the same width.
@@ -187,20 +189,27 @@ def spend(sprite: Sprite, db: str = DEFAULT_DB) -> int:
     return 0
 
 
-def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callable[[], bool] = lambda: False) -> int:
-    """Follows guard events as they land. Only events newer than when it started."""
+def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callable[[], bool] = lambda: False, ask: Callable[[str], str] = input) -> int:
+    """Follows guard events as they land, and answers questions from `serve --ask`. Only events newer
+    than when it started."""
     if not Path(db).is_file():
         sprite.say("look", f"Waiting for {db}.\nStart `python -m prestige serve` first.")
     while not Path(db).is_file():
         if stop():
             return 1
         time.sleep(max(poll, 1.0))
-    conn = sqlite3.connect(db)
+    conn = approvals.connect(db)
     last = _count(conn, "SELECT coalesce(max(id), 0) FROM guard_events")
     sprite.db, sprite.model = db, _model(db)
     sprite.say("idle", f"Watching {db}.\nCtrl+C to stop.")
     try:
         while not stop():
+            for row_id, rule, tool, arg, source, value in approvals.pending(conn):
+                yes = question(sprite, rule, f"{tool}.{arg}" if arg else tool, source, value, ask)
+                if not approvals.answer(conn, row_id, yes):
+                    sprite.say("look", "Too late. It timed out, so it was blocked.")
+                else:
+                    sprite.say("idle" if yes else "happy", "OK, it goes through." if yes else "Blocked it.")
             rows = _rows(conn, last)
             for row_id, action, rule, tool, arg, source in rows:
                 last = row_id
@@ -220,6 +229,16 @@ def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callabl
     cheer(sprite, db, "Done watching.")
     sprite.db, sprite.model = None, None
     return 0
+
+
+def question(sprite: Sprite, rule: str, target: str, source: str, value: str | None, ask: Callable[[str], str]) -> bool:
+    """Asks the person at the terminal. Anything but y is a no."""
+    sprite.wiggle(["alarm", "look"], f"The agent wants to run {target}\nwith {value!r}.\n{rule}: that value only came from {source}, never from you.")
+    try:
+        yes = ask("  Let it through? [y/N] ").strip().lower() in ("y", "yes")
+    except EOFError:
+        yes = False
+    return yes
 
 
 def cheer(sprite: Sprite, db: str, first: str = "All done.") -> None:
