@@ -67,8 +67,19 @@ trials without it:
 | Cost per task | $0.0074 | $0.0077 |
 | Change in total cost, paired by task | | +2.9% (95% CI -3.8% to +9.6%) |
 
-No saving. Baseten already caches this workload well, and short tasks may finish before routing
-matters. The flag stays off by default. Run: `runs/live/open-affinity`, not committed.
+No saving. Keying it on the agent instead of the conversation, one trial of the same 57 tasks on Nov 4:
+
+| | No header, 3 trials | Per conversation | Per agent |
+|---|---:|---:|---:|
+| Input from cache | 92.4%, 94.8%, 94.8% | 89.1% | 90.0% |
+| First call from cache | 93%, 96%, 97% | 82% | 85% |
+| Change in total cost, paired by task | | +2.9% (95% CI -3.5% to +10.0%) | +7.2% (95% CI -1.3% to +16.3%) |
+
+Both ways of sending the header came in below every trial without it. The affinity runs were later in
+time than the baselines, so this can't separate the header from load on Baseten that day. For short
+agent tasks like these, Baseten's default routing already does well, and the header isn't worth
+sending. The flag stays off by default. Runs: `runs/live/open-affinity` and
+`runs/live/open-affinity-agent`, not committed.
 
 ## Time
 
@@ -262,8 +273,8 @@ Replay numbers describe the rules, not a model.
 
 | Provider | Runs | Spent |
 |---|---:|---:|
-| Meta API, Spark and Wonder | 2,174 | $40.86 |
-| Baseten, Spark Open | 2,653 | $29.24 |
+| Meta API, Spark and Wonder | 2,174 | $40.87 |
+| Baseten, Spark Open | 2,710 | $29.69 |
 
 ## Why input missed the cache
 
@@ -281,5 +292,6 @@ input by cause, using the ordered segment hashes the trace keeps. Report: [live/
 - Meta's API is different. 11% of Muse calls missed more than 512 tokens, and those hold 62% of missed
   tokens. Those are real misses, not rounding.
 
-Untested idea that follows: key affinity on the agent, not the conversation, so every conversation
-sharing a prefix lands on the same replica. `--session-affinity agent` sends that. It hasn't been run.
+That suggested keying affinity on the agent instead, so every conversation sharing a prefix lands on
+the same replica (`--session-affinity agent`, one value per suite). It didn't help either. See the
+table under Session affinity.

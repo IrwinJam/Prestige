@@ -22,3 +22,4 @@ From live traces, no spend. Each row splits one setup's uncached input tokens by
 | `open-benign-t2` | D | 753,520 | 94.8% | 17% | 57% | 0% | 26% | 0 / 161 |
 | `open-benign-t2` | E | 810,820 | 95.4% | 13% | 61% | 0% | 26% | 0 / 182 |
 | `open-affinity` | D | 728,545 | 89.1% | 37% | 38% | 0% | 24% | 0 / 151 |
+| `open-affinity-agent` | D | 766,772 | 90.0% | 31% | 42% | 0% | 27% | 0 / 156 |
