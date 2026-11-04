@@ -84,7 +84,7 @@ On the pairs where an optimized attack lands, 10 runs each:
 | Labels for new tools | Drafted labels caught all 18 high-impact AgentDojo tools, and covered IBM's Qiskit MCP server from its schemas |
 | Cache misses | The prompt prefix never broke across about 3,300 calls. Baseten caches in 64-token blocks |
 | Session affinity | Baseten's `x-session-affinity` header saved nothing on these tasks, keyed per conversation or per agent |
-| Images | Downscaling renders from 1024×768 to 512×384 cut input cost 70% on Muse. Muse caches repeated images, but only 47% of a live image history, so trimming old images was cheaper. [docs/IMAGES.md](docs/IMAGES.md) |
+| Images | Downscaling renders to 512×384 cut input cost 55% through the gateway on Muse, at 10 of 12 answers right against 12 of 12. The image history was 84% cached, so trimming old images didn't pay. [docs/IMAGES.md](docs/IMAGES.md) |
 
 Every number, miss and limit: [docs/RESULTS.md](docs/RESULTS.md).
 
@@ -173,6 +173,17 @@ For Spark Open on Baseten, swap `--muse` for:
 ```bash
 --base-url https://inference.baseten.co/v1 --api-key-env BASETEN_API_KEY --provider baseten
 ```
+
+### Agents that send images
+
+```bash
+prestige serve ... --image-max-side 512 --image-keep-last 2
+```
+
+Downscales embedded images and keeps only the newest ones. Off by default. Through the gateway on
+Muse, downscaling cut input cost 55% on a render-tracking task but got 2 of 12 answers wrong, and
+trimming cost more because the image history was 84% cached. Measure on your own task first:
+[docs/IMAGES.md](docs/IMAGES.md).
 
 ### Run it in a container
 
@@ -341,3 +352,4 @@ All read saved traces, so none of them spend anything.
 | `python -m prestige.eval.figures` | The SVG figures in `docs/figures/`, light and dark |
 | `python -m prestige.eval.assistant_gif` | The assistant GIF |
 | `python -m prestige.eval.images` | What images cost on Muse, live, about $0.08 |
+| `python -m prestige.eval.image_policy_check` | The image policy through the gateway, paired, live, about $0.10 |

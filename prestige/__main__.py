@@ -59,6 +59,8 @@ def main(argv: list[str] | None = None) -> int:
     serve.add_argument("--provider", default="example", help="provider name to look up in the harness's prices.yaml")
     serve.add_argument("--muse", action="store_true", help="use Meta's Model API for Muse")
     serve.add_argument("--simulate", action="store_true", help="answer with the offline simulator instead of a real provider")
+    serve.add_argument("--image-max-side", type=int, help="downscale embedded images so their longest side is at most this many pixels")
+    serve.add_argument("--image-keep-last", type=int, help="keep only the newest N images in the history, older ones become a short note")
     serve.add_argument("--session-affinity", nargs="?", const="conversation", choices=("conversation", "agent"), help="send x-session-affinity for more cache hits on Baseten: one value per conversation, or one per agent (every conversation through this gateway)")
     serve.add_argument("--ask", action="store_true", help="ask a person in `prestige assistant watch` before blocking a call")
     serve.add_argument("--ask-timeout", type=float, default=120.0, help="seconds to wait for an answer. No answer means no")
@@ -94,8 +96,11 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     approver = AskInTerminal(args.db, args.ask_timeout) if args.ask and guard else None
-    server = build_server(adapter, chain=chain, guard=guard, db=args.db, port=args.port, budget_usd=args.budget, limit=limit, host=os.environ.get("HARNESS_HOST", "127.0.0.1"), approver=approver, affinity=args.session_affinity)
+    server = build_server(adapter, chain=chain, guard=guard, db=args.db, port=args.port, budget_usd=args.budget, limit=limit, host=os.environ.get("HARNESS_HOST", "127.0.0.1"), approver=approver, affinity=args.session_affinity,
+        images=_images(args))
     policies = ", ".join(n for n, _ in chain) or "none"
+    if _images(args):
+        policies += f", images (max side {args.image_max_side or 'any'}, keep last {args.image_keep_last or 'all'})"
     guard_desc = f"block {sorted(guard.block) or 'nothing'}, flag {sorted(guard.flag) or 'nothing'}" if guard else "off"
     if approver:
         guard_desc += f", ask in `prestige assistant watch --db {args.db}` first"
@@ -114,6 +119,12 @@ def main(argv: list[str] | None = None) -> int:
         server.stop()
         print("stopped")
     return 0
+
+
+def _images(args: argparse.Namespace) -> dict[str, int | None] | None:
+    if args.image_max_side is None and args.image_keep_last is None:
+        return None
+    return {"max_side": args.image_max_side, "keep_last": args.image_keep_last}
 
 
 def _rules(spec: str) -> list[str]:

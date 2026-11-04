@@ -334,5 +334,5 @@ wasn't flagged, most likely because the model reformatted it, the "values the mo
 
 | Provider | Runs | Spent |
 |---|---:|---:|
-| Meta API, Spark and Wonder | 2,174 | $40.88, plus about $0.08 of image probes |
+| Meta API, Spark and Wonder | 2,174 | $40.88, plus about $0.18 of image runs |
 | Baseten, Spark Open | 2,710 | $29.69 |

@@ -27,6 +27,7 @@ from harness.trace import TraceStore
 from harness.usage import Protocol
 
 from prestige.guard import Finding, Guard
+from prestige.image_policy import ImagePolicy
 
 SessionApprover = Callable[[str, Finding], bool]  # conversation key, finding
 
@@ -126,6 +127,7 @@ def build_server(
     host: str = "127.0.0.1",
     approver: SessionApprover | None = None,
     affinity: str | None = None,  # "conversation", or "agent": one key for every conversation here
+    images: dict[str, int | None] | None = None,  # ImagePolicy settings: max_side, keep_last
 ) -> Server:
     """The harness's `build_server`, with a guarded session per conversation."""
     store = TraceStore(db)
@@ -136,6 +138,8 @@ def build_server(
 
     def new_session(key: str) -> GuardedSession:
         policies = [POLICIES[name](**kwargs) for name, kwargs in chain]
+        if images:
+            policies.append(ImagePolicy(**images))
         meta = {"serve": True, "key": key, "policies": [n for n, _ in chain], "guard": guard_meta}
         run_id = store.start_run(f"{label}/{key}", meta)
         return GuardedSession(

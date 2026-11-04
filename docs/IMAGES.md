@@ -59,20 +59,44 @@ Live, Muse served 47% of the image history from cache, below every line in that 
 runs in [RESULTS.md](RESULTS.md) hit 89% to 92%, so images cache less well than text here. The table is
 modeled, from one cache share measured once. The six-step rows above are measured.
 
+## The image policy, measured through the gateway
+
+`prestige serve --image-max-side N --image-keep-last K` downscales embedded images and keeps only the
+newest K. It's opt-in and off by default. Code: `prestige/image_policy.py`.
+
+Paired check on Nov 4 (`python -m prestige.eval.image_policy_check`): a plain OpenAI SDK agent sent the
+6-step conversation with its full history, through gateways with Prestige's cost policies on that
+differed only in the image setting. The cube moves left to right, and each step asks where it is, so
+every answer has a known right one. Two trials per setting, 12 answers each:
+
+| Image setting | Input tokens | From cache | Input cost | Output cost | Right answers |
+|---|---:|---:|---:|---:|---:|
+| None | 42,342 | 84% | $0.0138 | $0.0163 | 12 / 12 |
+| Longest side 512 | 12,690 | 69% | $0.0062 | $0.0195 | 10 / 12 |
+| Longest side 512, keep last 2 | 7,590 | 29% | $0.0071 | $0.0330 | 11 / 12 |
+
+- Downscaling cut input tokens 70% and input cost 55%. It also cost 2 of 12 answers, and output cost,
+  most of it reasoning, varied enough that the total saving was about 15%.
+- Through the gateway, 84% of the image history came from cache, against 47% calling the API directly.
+  That's above the crossover in the table above, so trimming old images cost more here, not less.
+  Prestige's stable prompt layout is the likely reason, but this check can't separate it from the other
+  differences between the two runs.
+
 ## What this means for a gateway
 
-- **Downscale before the model sees it.** The largest saving, measured at 70%. Whether answers stay as
-  good at the lower size wasn't measured, and depends on the task. Small text in a screenshot needs more
-  pixels than the position of an object in a render.
-- **Trim old images, unless the provider caches them well.** On Muse today, with these runs, trimming
-  won. `python -m prestige.eval.cache_report` measures the cache share on any deployment's own traces,
-  which tells you which side of the table you're on.
-- **Not built yet:** an opt-in gateway policy that downscales images and trims old ones, measured with the
-  same paired runs as the text results. The numbers above say where to start.
+- Downscale when images are bigger than the task needs. Input cost falls by about half, but answers
+  can get worse, as 2 of 12 did here. Small text in a screenshot needs more pixels than an object's
+  position in a render. Check accuracy on your own task before turning it on.
+- Trim old images only when the provider caches them poorly. Behind Prestige on Muse, it doesn't
+  pay. `python -m prestige.eval.cache_report` measures the cache share on any deployment's own traces,
+  which tells you which side of the crossover table you're on.
+- Output can outweigh images. With low reasoning effort, output was still half or more of each
+  setup's cost, so the reasoning policy matters as much as the image policy.
 
 ## Limits
 
-- One trial per setup, on a rendered scene, not a real agent task.
+- One or two trials per setup, on a rendered scene, not a real agent task. 12 answers can't show a
+  small accuracy change.
 - Cache shares vary by provider, load and time. The 47% here is one measurement.
 - The crossover table comes from a model with fixed text sizes per step. It shows the shape, not exact
   thresholds.

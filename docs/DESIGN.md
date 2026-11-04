@@ -109,6 +109,7 @@ store and policies.
 | `prestige/guard/labels.py` | Versioned tool labels |
 | `prestige/guard/policy.py` | The origin and mention rules, the notice, findings |
 | `prestige/guard/draft.py` | First-draft labels from OpenAI or MCP tool schemas, `prestige labels draft` |
+| `prestige/image_policy.py` | Opt-in downscaling and trimming of images, `--image-max-side`, `--image-keep-last` |
 | `prestige/approvals.py` | Questions to a real person through the trace database, for `--ask` |
 | `prestige/assistant.py` | The terminal sprite. `watch` follows guard events and answers questions |
 | `prestige/integrations/litellm.py` | The guard as a LiteLLM proxy guardrail |
