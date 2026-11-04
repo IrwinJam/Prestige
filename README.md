@@ -76,13 +76,16 @@ Or run it through the sprite, which also watches a live gateway and reacts when 
 ```
 
 ```
-    .~~~~~~~~~.      __________________________________________________
-  .~           ~.   | Guard on.                                        |
- (   .-------.   )  | blocked send_money.recipient: R1, from read_file |
- (  |  ^   ^  |  )  | Attack failed.                                   |
- (  | '  w  ' |  )   --------------------------------------------------
+    .~~~~~~~~~.
+  .~           ~.
+ (   .-------.   )
+ (  |  ^   ^  |  )
+ (  | '  w  ' |  )
   ~. '-------' .~
     '~~~~~~~~~'
+  Guard on.
+  blocked send_money.recipient: R1, from read_file
+  Attack failed.
 ```
 
 Commands: `demo`, `results`, `watch` (follows guard events while `serve` runs), `spend`, `serve`, `help`.

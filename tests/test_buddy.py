@@ -36,8 +36,8 @@ def test_bubble_fits_the_text():
     s, out = sprite()
     rows = s.say("idle", "one\nlonger line")
     lines = out.getvalue().splitlines()
-    assert rows == len(lines) == 7
-    assert "| longer line |" in lines[2]
+    assert rows == len(lines) == 10
+    assert lines[-2] == "  longer line"
 
 
 def test_results_reads_the_readme_table():

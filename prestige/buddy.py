@@ -66,19 +66,17 @@ class Sprite:
             os.system("")  # turns on ANSI colors in the Windows console
 
     def say(self, mood: str, text: str) -> int:
-        """Prints the face with a speech bubble. Returns how many lines that took."""
-        face = FACES[mood]
+        """Prints the face, then the text under it. Returns how many lines that took."""
+        face = [line.rstrip() for line in FACES[mood]]
         lines = text.splitlines() or [""]
-        width = max(len(line) for line in lines)
-        bubble = [" " + "_" * (width + 2)] + [f"< {line.ljust(width)} >" if len(lines) == 1 else f"| {line.ljust(width)} |" for line in lines] + [" " + "-" * (width + 2)]
-        rows = max(len(face), len(bubble))
-        face = face + [" " * len(face[0])] * (rows - len(face))
-        bubble = bubble + [""] * (rows - len(bubble))
         paint = (lambda s: f"\033[{COLORS[mood]}m{s}\033[0m") if self.color else (lambda s: s)
-        for f, b in zip(face, bubble):
-            self.out.write(paint(f) + " " + b + "\n")
+        for line in face:
+            self.out.write(paint(line) + "\n")
+        for line in lines:
+            self.out.write("  " + line + "\n")
+        self.out.write("\n")
         self.out.flush()
-        return rows
+        return len(face) + len(lines) + 1
 
     def wiggle(self, moods: list[str], text: str, delay: float = 0.25) -> None:
         """A short animation in place. Skipped when output isn't a terminal."""
