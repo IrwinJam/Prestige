@@ -264,3 +264,22 @@ Replay numbers describe the rules, not a model.
 |---|---:|---:|
 | Meta API, Spark and Wonder | 2,174 | $40.86 |
 | Baseten, Spark Open | 2,653 | $29.24 |
+
+## Why input missed the cache
+
+From the existing traces, no spend. `python -m prestige.eval.cache_report` splits each call's uncached
+input by cause, using the ordered segment hashes the trace keeps. Report: [live/cache.md](live/cache.md).
+
+- No prefix ever broke. Across about 3,300 later calls, every call's prefix matched the call before it.
+- Baseten caches in 64-token blocks: every cached count it reported is a multiple of 64. Median missed
+  prefix is 12 to 121 tokens, and only 0 to 2% of calls lost more than 512. That's rounding, so
+  per-conversation affinity had little to win back.
+- Most cache value comes from other conversations. A conversation's first call already gets 82 to 96%
+  of its input from cache, because a suite's tasks share tool schemas and the system prompt.
+  Per-conversation affinity cut that from 93 to 96% to 82%, likely by spreading conversations over
+  replicas.
+- Meta's API is different. 11% of Muse calls missed more than 512 tokens, and those hold 62% of missed
+  tokens. Those are real misses, not rounding.
+
+Untested idea that follows: key affinity on the agent, not the conversation, so every conversation
+sharing a prefix lands on the same replica. `--session-affinity agent` sends that. It hasn't been run.

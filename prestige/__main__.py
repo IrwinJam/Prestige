@@ -59,7 +59,7 @@ def main(argv: list[str] | None = None) -> int:
     serve.add_argument("--provider", default="example", help="provider name to look up in the harness's prices.yaml")
     serve.add_argument("--muse", action="store_true", help="use Meta's Model API for Muse")
     serve.add_argument("--simulate", action="store_true", help="answer with the offline simulator instead of a real provider")
-    serve.add_argument("--session-affinity", action="store_true", help="send x-session-affinity per conversation, for more cache hits on Baseten")
+    serve.add_argument("--session-affinity", nargs="?", const="conversation", choices=("conversation", "agent"), help="send x-session-affinity for more cache hits on Baseten: one value per conversation, or one per agent (every conversation through this gateway)")
     serve.add_argument("--ask", action="store_true", help="ask a person in `prestige buddy watch` before blocking a call")
     serve.add_argument("--ask-timeout", type=float, default=120.0, help="seconds to wait for an answer. No answer means no")
     labels = sub.add_parser("labels", help="draft labels for your own tools: prestige labels draft tools.json")

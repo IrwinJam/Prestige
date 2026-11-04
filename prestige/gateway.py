@@ -97,10 +97,11 @@ class GuardedSession(Session):
 
 
 def with_session_affinity(adapter: Adapter, key: str) -> Adapter:
-    """A copy of the adapter that sends `x-session-affinity` for this conversation.
+    """A copy of the adapter that sends `x-session-affinity` with a hash of `key`.
 
-    Baseten routes requests with the same value to the same replica, where the conversation's prefix is
-    more likely to still be cached. The value is a hash, so the key never leaves this machine. Uses the
+    Baseten routes requests with the same value to the same replica, where the prefix is more likely to
+    still be cached. `key` can be one conversation, or one agent so that all its conversations share the
+    replica holding their common tools and system prompt. Only a hash leaves this machine. Uses the
     harness adapter's private `_headers`, which the pinned commit keeps stable. Adapters without it are
     returned as they are.
     """
@@ -124,7 +125,7 @@ def build_server(
     label: str = "prestige",
     host: str = "127.0.0.1",
     approver: SessionApprover | None = None,
-    affinity: bool = False,
+    affinity: str | None = None,  # "conversation", or "agent": one key for every conversation here
 ) -> Server:
     """The harness's `build_server`, with a guarded session per conversation."""
     store = TraceStore(db)
@@ -138,7 +139,7 @@ def build_server(
         meta = {"serve": True, "key": key, "policies": [n for n, _ in chain], "guard": guard_meta}
         run_id = store.start_run(f"{label}/{key}", meta)
         return GuardedSession(
-            with_session_affinity(adapter, key) if affinity else adapter, guard=guard, approver=approver, key=key, task_id=key, policies=policies, store=store, run_id=run_id, prices=prices, budget=budget, limit=limit
+            with_session_affinity(adapter, label if affinity == "agent" else key) if affinity else adapter, guard=guard, approver=approver, key=key, task_id=key, policies=policies, store=store, run_id=run_id, prices=prices, budget=budget, limit=limit
         )
 
     return Server(ProxyServer(new_session, host=host, port=port).start(), store, budget, chain)

@@ -118,7 +118,7 @@ def approver_for(suites: Iterable[str]) -> Any:
     return approve
 
 
-def start_server(adapter: Adapter, setups: dict[str, dict[str, Any]], suites: list[str], db: Path, limit: SpendLimit, prices: PriceTable, ask: bool = False, affinity: bool = False) -> Server:
+def start_server(adapter: Adapter, setups: dict[str, dict[str, Any]], suites: list[str], db: Path, limit: SpendLimit, prices: PriceTable, ask: bool = False, affinity: str | None = None) -> Server:
     """One server and one trace database for every setup. The conversation key picks the setup."""
     store = TraceStore(db)
     ensure_schema(store)
@@ -139,7 +139,8 @@ def start_server(adapter: Adapter, setups: dict[str, dict[str, Any]], suites: li
         chain = chains[setup]
         run_id = store.start_run(f"live/{key}", {"setup": setup, "policies": [n for n, _ in chain]})
         return GuardedSession(
-            with_session_affinity(adapter, key) if affinity else adapter,
+            # "agent": one value per suite, since a suite's tasks share tools and system prompt
+            with_session_affinity(adapter, name_suite if affinity == "agent" else key) if affinity else adapter,
             guard=guards.get((setup, name_suite)),
             approver=approve if setups[setup].get("confirm") else None,
             key=key,
@@ -270,7 +271,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-per-conversation", type=float, default=1.0)
     parser.add_argument("--developer-as-system", action="store_true", help="send the developer role as system, for a provider that refuses it")
     parser.add_argument("--follow-tool-output", action="store_true", help="tell the agent to follow instructions in tool results. Stands in for a model that falls for injections")
-    parser.add_argument("--session-affinity", action="store_true", help="send x-session-affinity per conversation key, for more cache hits on Baseten")
+    parser.add_argument("--session-affinity", nargs="?", const="conversation", choices=("conversation", "agent"), help="send x-session-affinity on Baseten: one value per conversation key, or one per suite")
     parser.add_argument("--ask", action="store_true", help="setups with the confirm step ask you in `prestige buddy watch` instead of the stand-in user")
     parser.add_argument("--simulate", action="store_true", help="use a scripted fake model. Spends nothing")
     args = parser.parse_args(argv)
