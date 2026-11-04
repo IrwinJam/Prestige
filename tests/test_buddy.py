@@ -32,12 +32,21 @@ def add_event(db: Path, action: str = "blocked") -> None:
     conn.close()
 
 
-def test_bubble_fits_the_text():
+def test_name_and_text_sit_under_the_face():
     s, out = sprite()
     rows = s.say("idle", "one\nlonger line")
     lines = out.getvalue().splitlines()
-    assert rows == len(lines) == 10
+    assert rows == len(lines) == 13
+    assert lines[9].strip() == "Muse"
     assert lines[-2] == "  longer line"
+
+
+def test_spend_line_shows_the_cap(tmp_path):
+    db = trace_db(tmp_path / "t.sqlite")
+    s, out = sprite()
+    assert buddy.run(s, ["spend", "--db", str(db), "--cap", "5"]) == 0
+    assert "$0.00 spent of $5.00 cap, $5.00 left" in out.getvalue()
+    assert buddy.run(s, ["cap", "lots"]) == 2
 
 
 def test_results_reads_the_readme_table():

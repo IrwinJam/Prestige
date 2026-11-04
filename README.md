@@ -76,20 +76,25 @@ Or run it through the sprite, which also watches a live gateway and reacts when 
 ```
 
 ```
-    .~~~~~~~~~.
-  .~           ~.
- (   .-------.   )
- (  |  ^   ^  |  )
- (  | '  w  ' |  )
-  ~. '-------' .~
-    '~~~~~~~~~'
+      .-~~~~~-.
+    .'         '.
+   /  .-------.  \
+   |  ( ^   ^ )  |
+   |  (*  w  *)  |
+   |  '-------'  |
+  /|             |\
+ ( |             | )
+  '~~~~~~~~~~~~~~~'
+         Muse
   Guard on.
   blocked send_money.recipient: R1, from read_file
   Attack failed.
 ```
 
-Commands: `demo`, `results`, `watch` (follows guard events while `serve` runs), `spend`, `serve`, `help`.
-It only reads the trace database and never shows a blocked value.
+Commands: `demo`, `results`, `watch` (follows guard events while `serve` runs), `spend`, `cap`, `serve`,
+`help`. While watching, every message ends with what's spent against the cap you give it, like
+`$0.04 spent of $0.50 cap, $0.46 left`. It only reads the trace database and never shows a blocked
+value.
 
 ## Use it
 

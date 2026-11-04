@@ -23,35 +23,39 @@ from pathlib import Path
 
 DEFAULT_DB = "runs/prestige.sqlite"
 
-# A round face in a fuzzy hood. Every line is the same width so the speech bubble lines up.
+# A little buddy in a hood, with its face peeking out. Every line is the same width.
 def _face(eyes: str, mouth: str) -> list[str]:
     return [
-        "    .~~~~~~~~~.    ",
-        "  .~           ~.  ",
-        " (   .-------.   ) ",
-        f" (  |{eyes}|  ) ",
-        f" (  |{mouth}|  ) ",
-        "  ~. '-------' .~  ",
-        "    '~~~~~~~~~'    ",
+        "      .-~~~~~-.      ",
+        "    .'         '.    ",
+        "   /  .-------.  \\   ",
+        f"   |  ({eyes})  |   ",
+        f"   |  ({mouth})  |   ",
+        "   |  '-------'  |   ",
+        "  /|             |\\  ",
+        " ( |             | ) ",
+        "  '~~~~~~~~~~~~~~~'  ",
     ]
 
 
 FACES = {
-    "idle": _face("  o   o  ", " '  u  ' "),
-    "blink": _face("  -   -  ", " '  u  ' "),
-    "look": _face("   o   o ", " '  u  ' "),
-    "alarm": _face("  O   O  ", " '  o  ' "),
-    "stern": _face("  >   <  ", "    -    "),
-    "happy": _face("  ^   ^  ", " '  w  ' "),
+    "idle": _face(" o   o ", "*  u  *"),
+    "blink": _face(" -   - ", "*  u  *"),
+    "look": _face("  o   o", "*  u  *"),
+    "alarm": _face(" O   O ", "*  o  *"),
+    "stern": _face(" >   < ", "   -   "),
+    "happy": _face(" ^   ^ ", "*  w  *"),
 }
 
-COLORS = {"idle": "35", "blink": "35", "look": "35", "alarm": "31", "stern": "33", "happy": "32"}
+COLORS = {"idle": "37", "blink": "37", "look": "37", "alarm": "31", "stern": "33", "happy": "32"}
+NAME = "Muse"
 
 HELP = """commands
   demo [user_task injection_task]   hijacked banking task, guard off then on. Offline, no spend
   results                           headline numbers from the README
-  watch [--db PATH]                 follow guard events live while `serve` runs. Ctrl+C to stop
-  spend [--db PATH]                 calls, tokens and cost in a trace database
+  watch [--db PATH] [--cap USD]     follow guard events live while `serve` runs. Ctrl+C to stop
+  spend [--db PATH] [--cap USD]     calls, tokens and cost in a trace database
+  cap USD                           the spend cap to show under me. Match serve's --max-total
   serve                             the command to start the gateway in another window
   help, quit"""
 
@@ -59,6 +63,8 @@ HELP = """commands
 class Sprite:
     def __init__(self, out=None, animate: bool | None = None, color: bool | None = None):
         self.out = out or sys.stdout
+        self.db: str | None = None  # set while watching, so every message shows the spend
+        self.cap: float | None = None
         tty = hasattr(self.out, "isatty") and self.out.isatty()
         self.animate = tty if animate is None else animate
         self.color = (tty and not os.environ.get("NO_COLOR")) if color is None else color
@@ -69,14 +75,28 @@ class Sprite:
         """Prints the face, then the text under it. Returns how many lines that took."""
         face = [line.rstrip() for line in FACES[mood]]
         lines = text.splitlines() or [""]
-        paint = (lambda s: f"\033[{COLORS[mood]}m{s}\033[0m") if self.color else (lambda s: s)
+        money = self.money()
+        if money:
+            lines.append(money)
+        paint = (lambda s, c=COLORS[mood]: f"\033[{c}m{s}\033[0m") if self.color else (lambda s, c="": s)
         for line in face:
             self.out.write(paint(line) + "\n")
-        for line in lines:
-            self.out.write("  " + line + "\n")
+        self.out.write(paint(NAME.center(len(FACES[mood][0])).rstrip(), "1") + "\n")
+        for i, line in enumerate(lines):
+            dim = money and i == len(lines) - 1  # the spend line is grey
+            self.out.write((paint("  " + line, "90") if dim else "  " + line) + "\n")
         self.out.write("\n")
         self.out.flush()
-        return len(face) + len(lines) + 1
+        return len(face) + 1 + len(lines) + 1
+
+    def money(self) -> str:
+        """Spend so far against the cap, when a trace database is set."""
+        if not self.db or not Path(self.db).is_file():
+            return ""
+        spent = _spent(self.db)
+        if self.cap:
+            return f"${spent:.2f} spent of ${self.cap:.2f} cap, ${max(self.cap - spent, 0):.2f} left"
+        return f"${spent:.2f} spent, no cap shown. Use cap USD"
 
     def wiggle(self, moods: list[str], text: str, delay: float = 0.25) -> None:
         """A short animation in place. Skipped when output isn't a terminal."""
@@ -133,15 +153,16 @@ def spend(sprite: Sprite, db: str = DEFAULT_DB) -> int:
         return 1
     conn = sqlite3.connect(db)
     try:
-        calls, tokens, cached, cost = conn.execute(
-            "SELECT count(*), coalesce(sum(input_tokens), 0), coalesce(sum(cached_input_tokens), 0),"
-            " coalesce(sum(cost_uncached_input + cost_cached_input + cost_output), 0) FROM calls"
+        calls, tokens, cached = conn.execute(
+            "SELECT count(*), coalesce(sum(input_tokens), 0), coalesce(sum(cached_input_tokens), 0) FROM calls"
         ).fetchone()
         blocked = _count(conn, "SELECT count(*) FROM guard_events WHERE action = 'blocked'")
     finally:
         conn.close()
     share = f"{100 * cached / tokens:.0f}%" if tokens else "none"
-    sprite.say("idle", f"{calls} model calls, ${cost:.2f} spent.\nInput from cache: {share}.\nGuard blocks: {blocked}.")
+    before, sprite.db = sprite.db, db
+    sprite.say("idle", f"{calls} model calls.\nInput from cache: {share}.\nGuard blocks: {blocked}.")
+    sprite.db = before
     return 0
 
 
@@ -155,6 +176,7 @@ def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callabl
         time.sleep(max(poll, 1.0))
     conn = sqlite3.connect(db)
     last = _count(conn, "SELECT coalesce(max(id), 0) FROM guard_events")
+    sprite.db = db
     sprite.say("idle", f"Watching {db}.\nCtrl+C to stop.")
     try:
         while not stop():
@@ -174,7 +196,18 @@ def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callabl
     finally:
         conn.close()
     sprite.say("blink", "Done watching.")
+    sprite.db = None
     return 0
+
+
+def _spent(db: str) -> float:
+    conn = sqlite3.connect(db)
+    try:
+        return conn.execute("SELECT coalesce(sum(cost_uncached_input + cost_cached_input + cost_output), 0) FROM calls").fetchone()[0]
+    except sqlite3.OperationalError:  # no calls yet
+        return 0.0
+    finally:
+        conn.close()
 
 
 def _count(conn: sqlite3.Connection, sql: str) -> int:
@@ -191,14 +224,30 @@ def _rows(conn: sqlite3.Connection, after: int) -> list[tuple]:
         return []
 
 
+def _option(words: list[str], flag: str) -> str | None:
+    if flag in words and words.index(flag) + 1 < len(words):
+        return words[words.index(flag) + 1]
+    return None
+
+
 def run(sprite: Sprite, words: list[str]) -> int | None:
     """One command. Returns an exit code, or None for quit."""
     if not words:
         return 0
     cmd, rest = words[0].lower(), words[1:]
-    db = rest[rest.index("--db") + 1] if "--db" in rest and rest.index("--db") + 1 < len(rest) else DEFAULT_DB
+    db = _option(rest, "--db") or DEFAULT_DB
+    cap = _option(rest, "--cap") or (rest[0] if cmd == "cap" and rest else None)
+    if cap:
+        try:
+            sprite.cap = float(cap.lstrip("$"))
+        except ValueError:
+            sprite.say("look", f"`{cap}` isn't a dollar amount.")
+            return 2
     if cmd in ("quit", "exit", "q"):
         return None
+    if cmd == "cap":
+        sprite.say("idle", f"Cap set to ${sprite.cap:.2f}." if sprite.cap else "No cap set. Try cap 5")
+        return 0
     if cmd == "demo":
         return demo(sprite, *rest[:2])
     if cmd == "results":
@@ -208,7 +257,7 @@ def run(sprite: Sprite, words: list[str]) -> int | None:
     if cmd == "watch":
         return watch(sprite, db)
     if cmd == "serve":
-        sprite.say("idle", "In another window:\npython -m prestige serve --labels banking --muse \\\n  --policies cache,reason --max-total 5\nThen `watch` here.")
+        sprite.say("idle", "In another window:\npython -m prestige serve --labels banking --muse \\\n  --policies cache,reason --max-total 5 --max-per-conversation 0.50\n--max-total stops everything at $5. --max-per-conversation stops one agent at $0.50.\nThen `watch --cap 5` here.")
         return 0
     if cmd != "help":
         sprite.say("look", f"I don't know `{cmd}`.")
