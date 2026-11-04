@@ -44,6 +44,11 @@ Prestige against guard only is the cost comparison in the plan. Both have the gu
 as a saving. Most of the saving is output tokens: low reasoning effort cut them by 42% to 46% on both
 models. Spark Open already caches well on its own, so the cache layout adds less there.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/breakdown-dark.svg">
+  <img src="figures/breakdown-light.svg" alt="Mean cost per task by part. Output tokens fall from $0.0142 to $0.0077 on Muse Spark 1.3 and from $0.0081 to $0.0047 on Muse Spark Open." width="760">
+</picture>
+
 With 3 trials, each task's runs are averaged first and setups are paired by task. Reports:
 [Spark 1.3](live/main-benign-3-trials.md), [Spark Open](live/open-benign-3-trials.md).
 

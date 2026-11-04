@@ -39,6 +39,11 @@ Cost and time compare Prestige against the guard alone. Both sides have the guar
 can't pass for a saving. Two more trials of every task put the cost cut at 44% on Spark and 35% on Spark
 Open. The test plan, [eval/protocol.yaml](eval/protocol.yaml), was committed before any live run.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/breakdown-dark.svg">
+  <img src="docs/figures/breakdown-light.svg" alt="Mean cost per task by part. Output tokens fall from $0.0142 to $0.0077 on Muse Spark 1.3 and from $0.0081 to $0.0047 on Muse Spark Open." width="760">
+</picture>
+
 ### Security
 
 <picture>

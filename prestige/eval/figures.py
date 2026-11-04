@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import html
 import random
+import sqlite3
 from pathlib import Path
 
 from prestige.eval.cache_report import split
@@ -28,11 +29,14 @@ THEMES = {
         "prestige": "#2a78d6", "none": "#eb6834", "guard": "#1baf7a",
         # causes in the cache figure: palette slots 4 to 6, so they never borrow a setup's hue
         "c1": "#eda100", "c2": "#e87ba4", "c3": "#008300", "on_c1": "#0b0b0b", "on_c2": "#0b0b0b", "on_c3": "#fcfcfb",
+        # parts of a task's cost: slots 7 and 8, with cached input in a recessive gray
+        "out": "#6250d6", "unc": "#e34948", "cac": "#b8b6ae", "on_out": "#fcfcfb", "on_unc": "#fcfcfb", "on_cac": "#0b0b0b",
     },
     "dark": {
         "surface": "#1a1a19", "text": "#f0efec", "muted": "#c3c2b7", "grid": "#383835", "band": "#1f2f45",
         "prestige": "#3987e5", "none": "#d95926", "guard": "#199e70",
         "c1": "#c98500", "c2": "#d55181", "c3": "#008300", "on_c1": "#1a1a19", "on_c2": "#f0efec", "on_c3": "#f0efec",
+        "out": "#9085e9", "unc": "#e66767", "cac": "#6b6a64", "on_out": "#1a1a19", "on_unc": "#1a1a19", "on_cac": "#f0efec",
     },
 }
 FONT = "font-family=\"-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif\""
@@ -192,7 +196,55 @@ def fig_cache(theme: dict[str, str]) -> str:
     return svg.done()
 
 
-FIGURES = {"cost": fig_cost, "attacks": fig_attacks, "cache": fig_cache}
+def cost_parts(name: str, setup: str) -> tuple[float, float, float]:
+    """Mean cost per task: output, uncached input, cached input."""
+    conn = sqlite3.connect(Path("runs/live") / name / "trace.sqlite")
+    try:
+        tasks, out, unc, cac = conn.execute(
+            "SELECT count(DISTINCT r.label), sum(k.cost_output), sum(k.cost_uncached_input), sum(k.cost_cached_input)"
+            " FROM calls k JOIN runs r ON r.id = k.run_id"
+            " WHERE r.id IN (SELECT max(id) FROM runs GROUP BY label) AND r.label LIKE ?",
+            (f"%.{setup}.%.none",),
+        ).fetchone()
+    finally:
+        conn.close()
+    return out / tasks, unc / tasks, cac / tasks
+
+
+def fig_breakdown(theme: dict[str, str]) -> str:
+    """Where a task's money goes, guard only against Prestige, on one dollar scale."""
+    parts = (("out", "Output, reasoning included"), ("unc", "Uncached input"), ("cac", "Cached input"))
+    h = 330
+    svg = Svg(h, theme, "Cost per task by part. Most of the saving is output tokens, from low reasoning effort")
+    svg.text(24, 34, "Most of the saving is output tokens", size=18, weight=600)
+    svg.text(24, 56, "Mean cost per task by part, guard only against Prestige. 57 tasks per model, live, Nov 2.", size=13, color="muted")
+    scale = (W - LEFT - RIGHT - 70) / 0.020
+    top = 84
+    for i, (label, name) in enumerate(MODELS):
+        y0 = top + i * 92
+        svg.text(LEFT - 14, y0 + 30, label, anchor="end", weight=600)
+        for j, (setup, setup_name) in enumerate((("C", "Guard only"), ("D", "Prestige"))):
+            y = y0 + j * 34
+            values = cost_parts(name, setup)
+            svg.text(LEFT + 4, y - 3, setup_name, size=11, color="muted")
+            cursor = LEFT
+            for value, (key, _) in zip(values, parts):
+                w = value * scale
+                svg.rect(cursor, y, w - 2, 20, key, 4)
+                if w > 52:
+                    svg.text(cursor + 6, y + 14, f"${value:.4f}", size=11, weight=600, color="on_" + key)
+                cursor += w
+            svg.text(cursor + 8, y + 14, f"${sum(values):.4f}", size=12, weight=600)
+    lx = 24
+    for key, name in parts:
+        svg.rect(lx, h - 52, 12, 12, key, 3)
+        svg.text(lx + 18, h - 42, name, size=12)
+        lx += 18 + len(name) * 6.6 + 24
+    svg.text(24, h - 16, "Same dollar scale on every bar. Low reasoning effort cut output tokens 42% to 46%. List prices, from the live traces.", size=11, color="muted")
+    return svg.done()
+
+
+FIGURES = {"cost": fig_cost, "breakdown": fig_breakdown, "attacks": fig_attacks, "cache": fig_cache}
 
 
 def main(argv: list[str] | None = None) -> int:
