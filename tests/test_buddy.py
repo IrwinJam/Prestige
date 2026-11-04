@@ -101,3 +101,26 @@ def test_demo_blocks_the_attack(tmp_path, monkeypatch):
     assert "Guard off. Attack worked." in text
     assert "blocked send_money.recipient: R1, from read_file" in text
     assert "Attack failed." in text
+
+
+def test_spend_ends_with_the_cheer_and_the_model(tmp_path):
+    db = trace_db(tmp_path / "t.sqlite")
+    conn = sqlite3.connect(db)
+    conn.execute(
+        "INSERT INTO runs (id, created_at, label) VALUES ('r1', '2026-11-03T00:00:00', 'live/x')"
+    )
+    conn.execute(
+        "INSERT INTO calls (run_id, seq, created_at, provider, protocol, model, latency_s, attempts, input_tokens,"
+        " cached_input_tokens, output_tokens, reasoning_tokens, cost_uncached_input, cost_cached_input, cost_output,"
+        " price_effective_from, price_input, price_cached_input, price_output, price_verified, request_json, response_json)"
+        " VALUES ('r1', 1, 'now', 'meta', 'chat_completions', 'muse-spark-1.3', 1.0, 1, 1000000, 1000000, 0, 0,"
+        " 0, 0.15, 0, '2026-07-09', 1.25, 0.15, 4.25, 0, '{}', '{}')"
+    )
+    conn.commit()
+    conn.close()
+    s, out = sprite()
+    assert buddy.spend(s, str(db)) == 0
+    text = out.getvalue()
+    assert "muse-spark-1.3" in text
+    assert "Saved by the prompt cache: $1.10." in text
+    assert "    .'         '.     o" in text  # arm up

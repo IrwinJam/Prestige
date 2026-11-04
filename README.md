@@ -93,7 +93,8 @@ Or run it through the sprite, which also watches a live gateway and reacts when 
 
 Commands: `demo`, `results`, `watch` (follows guard events while `serve` runs), `spend`, `cap`, `serve`,
 `help`. While watching, every message ends with what's spent against the cap you give it, like
-`$0.04 spent of $0.50 cap, $0.46 left`. It only reads the trace database and never shows a blocked
+`$0.04 spent of $0.50 cap, $0.46 left`. When it finishes it throws an arm up and shows the model it
+watched and what the prompt cache saved. It only reads the trace database and never shows a blocked
 value.
 
 ## Use it

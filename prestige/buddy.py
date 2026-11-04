@@ -45,9 +45,21 @@ FACES = {
     "alarm": _face(" O   O ", "*  o  *"),
     "stern": _face(" >   < ", "   -   "),
     "happy": _face(" ^   ^ ", "*  w  *"),
+    # Arm up, eyes shut, all done.
+    "cheer": [
+        "      .-~~~~~-.         ",
+        "    .'         '.     o ",
+        "   /  .-------.  \\   /  ",
+        "   |  ( ^   ^ )  |  /   ",
+        "   |  (*  w  *)  | /    ",
+        "   |  '-------'  |/     ",
+        "  /|             |      ",
+        " ( |             |      ",
+        "  '~~~~~~~~~~~~~~~'     ",
+    ],
 }
 
-COLORS = {"idle": "37", "blink": "37", "look": "37", "alarm": "31", "stern": "33", "happy": "32"}
+COLORS = {"idle": "37", "blink": "37", "look": "37", "alarm": "31", "stern": "33", "happy": "32", "cheer": "32"}
 NAME = "Muse"
 
 HELP = """commands
@@ -65,6 +77,7 @@ class Sprite:
         self.out = out or sys.stdout
         self.db: str | None = None  # set while watching, so every message shows the spend
         self.cap: float | None = None
+        self.model: str | None = None  # the model behind the gateway, shown under the name
         tty = hasattr(self.out, "isatty") and self.out.isatty()
         self.animate = tty if animate is None else animate
         self.color = (tty and not os.environ.get("NO_COLOR")) if color is None else color
@@ -81,13 +94,16 @@ class Sprite:
         paint = (lambda s, c=COLORS[mood]: f"\033[{c}m{s}\033[0m") if self.color else (lambda s, c="": s)
         for line in face:
             self.out.write(paint(line) + "\n")
-        self.out.write(paint(NAME.center(len(FACES[mood][0])).rstrip(), "1") + "\n")
+        width = len(FACES["idle"][0])
+        self.out.write(paint(NAME.center(width).rstrip(), "1") + "\n")
+        if self.model:
+            self.out.write(paint(self.model.center(width).rstrip(), "90") + "\n")
         for i, line in enumerate(lines):
             dim = money and i == len(lines) - 1  # the spend line is grey
             self.out.write((paint("  " + line, "90") if dim else "  " + line) + "\n")
         self.out.write("\n")
         self.out.flush()
-        return len(face) + 1 + len(lines) + 1
+        return len(face) + 1 + bool(self.model) + len(lines) + 1
 
     def money(self) -> str:
         """Spend so far against the cap, when a trace database is set."""
@@ -114,6 +130,7 @@ class Sprite:
 def demo(sprite: Sprite, user_task: str = "user_task_0", injection_task: str = "injection_task_0") -> int:
     from prestige.eval.replay import replay
 
+    sprite.model = "scripted agent"
     sprite.wiggle(["idle", "look", "idle"], f"Banking {user_task} with {injection_task} placed.\nScripted agent, no model, no spend.")
     root = Path("runs/demo")
     root.mkdir(parents=True, exist_ok=True)
@@ -129,6 +146,9 @@ def demo(sprite: Sprite, user_task: str = "user_task_0", injection_task: str = "
             blocks = [f"{tool}.{arg}: {rule}, from {source}" for action, rule, tool, arg, source in o.events if action == "blocked"]
             text = "Guard on.\n" + "\n".join(f"blocked {b}" for b in blocks) + f"\nAttack {'worked' if o.security else 'failed'}."
             sprite.wiggle(["stern", "happy"] if not o.security else ["alarm"], text)
+    live = _headline()
+    sprite.wiggle(["happy", "cheer"], "All done. The attacker got nothing.\n$0.00 spent, it ran offline." + (f"\nLive, Prestige cut cost per task {live}." if live else ""))
+    sprite.model = None
     return 0
 
 
@@ -160,9 +180,10 @@ def spend(sprite: Sprite, db: str = DEFAULT_DB) -> int:
     finally:
         conn.close()
     share = f"{100 * cached / tokens:.0f}%" if tokens else "none"
-    before, sprite.db = sprite.db, db
+    before, sprite.db, sprite.model = sprite.db, db, _model(db)
     sprite.say("idle", f"{calls} model calls.\nInput from cache: {share}.\nGuard blocks: {blocked}.")
-    sprite.db = before
+    cheer(sprite, db)
+    sprite.db, sprite.model = before, None
     return 0
 
 
@@ -176,13 +197,14 @@ def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callabl
         time.sleep(max(poll, 1.0))
     conn = sqlite3.connect(db)
     last = _count(conn, "SELECT coalesce(max(id), 0) FROM guard_events")
-    sprite.db = db
+    sprite.db, sprite.model = db, _model(db)
     sprite.say("idle", f"Watching {db}.\nCtrl+C to stop.")
     try:
         while not stop():
             rows = _rows(conn, last)
             for row_id, action, rule, tool, arg, source in rows:
                 last = row_id
+                sprite.model = sprite.model or _model(db)
                 target = f"{tool}.{arg}" if arg else tool
                 if action == "blocked":
                     sprite.wiggle(["alarm", "stern"], f"Blocked {target}.\n{rule}: the value only came from {source}.")
@@ -195,9 +217,59 @@ def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callabl
         pass
     finally:
         conn.close()
-    sprite.say("blink", "Done watching.")
-    sprite.db = None
+    cheer(sprite, db, "Done watching.")
+    sprite.db, sprite.model = None, None
     return 0
+
+
+def cheer(sprite: Sprite, db: str, first: str = "All done.") -> None:
+    """The end pose: arm up, with what the cache saved and what the guard stopped."""
+    saved, blocked = _saved(db), _blocks(db)
+    before, sprite.db = sprite.db, db
+    sprite.wiggle(["happy", "cheer"], f"{first}\nSaved by the prompt cache: ${saved:.2f}.\nCalls the guard stopped: {blocked}.")
+    sprite.db = before
+
+
+def _model(db: str) -> str | None:
+    conn = sqlite3.connect(db)
+    try:
+        row = conn.execute("SELECT model FROM calls ORDER BY id DESC LIMIT 1").fetchone()
+        return row[0] if row else None
+    except sqlite3.OperationalError:
+        return None
+    finally:
+        conn.close()
+
+
+def _saved(db: str) -> float:
+    """What the cached tokens would have cost at the full input rate, minus what they did cost."""
+    conn = sqlite3.connect(db)
+    try:
+        return conn.execute("SELECT coalesce(sum(cached_input_tokens * (price_input - price_cached_input)), 0) / 1e6 FROM calls").fetchone()[0]
+    except sqlite3.OperationalError:
+        return 0.0
+    finally:
+        conn.close()
+
+
+def _blocks(db: str) -> int:
+    conn = sqlite3.connect(db)
+    try:
+        return _count(conn, "SELECT count(DISTINCT run_id || ':' || coalesce(call_id, '')) FROM guard_events WHERE action = 'blocked'")
+    finally:
+        conn.close()
+
+
+def _headline(readme: str | Path = "README.md") -> str:
+    """The cost cut on each model, from the README's results table."""
+    path = Path(readme)
+    if not path.is_file():
+        return ""
+    for line in path.read_text(encoding="utf-8").splitlines():
+        cells = [re.sub(r"\s*\(.*?\)", "", c).strip().replace("**", "") for c in line.strip().strip("|").split("|")]
+        if len(cells) == 3 and cells[0] == "Change":
+            return f"{cells[1].lstrip('-')} on Muse Spark and {cells[2].lstrip('-')} on Spark Open"
+    return ""
 
 
 def _spent(db: str) -> float:
@@ -280,5 +352,5 @@ def main(argv: list[str]) -> int:
                 break
         except Exception as exc:  # keep the session alive
             sprite.say("alarm", f"That failed: {type(exc).__name__}.")
-    sprite.say("blink", "Bye.")
+    sprite.wiggle(["happy", "cheer"], "Bye.")
     return 0
