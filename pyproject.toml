@@ -23,6 +23,8 @@ dev = ["pytest>=8"]
 security = ["agentdojo==0.1.35"]
 # The guard as a LiteLLM proxy guardrail. Tested against this version.
 litellm = ["litellm==1.105.1"]
+# The assistant GIF and the image cost probes
+figures = ["pillow==11.0.0"]
 
 [tool.hatch.metadata]
 allow-direct-references = true

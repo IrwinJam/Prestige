@@ -7,7 +7,8 @@ the tasks with no attack were run after, and are reported apart. Per-run reports
 
 **Parts:** [Setups](#setups) · [Cost](#cost) · [Caching](#caching) · [Time](#time) ·
 [Tasks done](#tasks-done-with-no-attack) · [Attacks](#attacks) · [Optimized attacks](#optimized-attacks) ·
-[Replay](#replay) · [Product checks](#product-checks) · [Limits](#limits) · [Spend](#spend)
+[Replay](#replay) · [Product checks](#product-checks) · [Limits](#limits) · [Spend](#spend).
+Image costs are on their own page: [IMAGES.md](IMAGES.md)
 
 ## Setups
 
@@ -333,5 +334,5 @@ wasn't flagged, most likely because the model reformatted it, the "values the mo
 
 | Provider | Runs | Spent |
 |---|---:|---:|
-| Meta API, Spark and Wonder | 2,174 | $40.88 |
+| Meta API, Spark and Wonder | 2,174 | $40.88, plus about $0.08 of image probes |
 | Baseten, Spark Open | 2,710 | $29.69 |

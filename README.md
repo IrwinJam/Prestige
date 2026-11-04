@@ -84,6 +84,7 @@ On the pairs where an optimized attack lands, 10 runs each:
 | Labels for new tools | Drafted labels caught all 18 high-impact AgentDojo tools, and covered IBM's Qiskit MCP server from its schemas |
 | Cache misses | The prompt prefix never broke across about 3,300 calls. Baseten caches in 64-token blocks |
 | Session affinity | Baseten's `x-session-affinity` header saved nothing on these tasks, keyed per conversation or per agent |
+| Images | Downscaling renders from 1024×768 to 512×384 cut input cost 70% on Muse. Muse caches repeated images, but only 47% of a live image history, so trimming old images was cheaper. [docs/IMAGES.md](docs/IMAGES.md) |
 
 Every number, miss and limit: [docs/RESULTS.md](docs/RESULTS.md).
 
@@ -115,6 +116,8 @@ prestige assistant demo        # or: python -m prestige.eval.demo
 ```
 
 ### The terminal sprite
+
+![prestige assistant going through a guarded session](docs/figures/assistant.gif)
 
 `prestige assistant` is a small companion in the terminal. It runs the demo and watches a live gateway,
 reacting each time the guard blocks a call. Every message while watching ends with the
@@ -336,3 +339,5 @@ All read saved traces, so none of them spend anything.
 | `python -m prestige.eval.draft_check` | Drafted labels against hand-written ones |
 | `python -m prestige.eval.replay` | Offline replay with a scripted agent |
 | `python -m prestige.eval.figures` | The SVG figures in `docs/figures/`, light and dark |
+| `python -m prestige.eval.assistant_gif` | The assistant GIF |
+| `python -m prestige.eval.images` | What images cost on Muse, live, about $0.08 |
