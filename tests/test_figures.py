@@ -1,6 +1,10 @@
 import xml.etree.ElementTree as ET
 
-from prestige.eval import figures
+import pytest
+
+pytest.importorskip("agentdojo")  # the figures read reports that need the benchmark
+
+from prestige.eval import figures  # noqa: E402
 
 
 def test_attack_figure_is_valid_svg_in_both_themes():
