@@ -23,44 +23,26 @@ from pathlib import Path
 
 DEFAULT_DB = "runs/prestige.sqlite"
 
-# Each face is 4 lines. Same width so the speech bubble lines up.
+# A round face in a fuzzy hood. Every line is the same width so the speech bubble lines up.
+def _face(eyes: str, mouth: str) -> list[str]:
+    return [
+        "    .~~~~~~~~~.    ",
+        "  .~           ~.  ",
+        " (   .-------.   ) ",
+        f" (  |{eyes}|  ) ",
+        f" (  |{mouth}|  ) ",
+        "  ~. '-------' .~  ",
+        "    '~~~~~~~~~'    ",
+    ]
+
+
 FACES = {
-    "idle": [
-        "   .-^-.  ",
-        "  ( o o ) ",
-        "  /| ~ |\\ ",
-        "   '-=-'  ",
-    ],
-    "blink": [
-        "   .-^-.  ",
-        "  ( - - ) ",
-        "  /| ~ |\\ ",
-        "   '-=-'  ",
-    ],
-    "look": [
-        "   .-^-.  ",
-        "  ( o o)  ",
-        "  /| ~ |\\ ",
-        "   '-=-'  ",
-    ],
-    "alarm": [
-        "   .-^-.  ",
-        "  ( O O ) ",
-        "  /| o |\\ ",
-        "   '-=-'  ",
-    ],
-    "stern": [
-        "   .-^-.  ",
-        "  ( > < ) ",
-        "  /| - |\\ ",
-        "   '-=-'  ",
-    ],
-    "happy": [
-        "   .-^-.  ",
-        "  ( ^ ^ ) ",
-        "  /| v |\\ ",
-        "   '-=-'  ",
-    ],
+    "idle": _face("  o   o  ", " '  u  ' "),
+    "blink": _face("  -   -  ", " '  u  ' "),
+    "look": _face("   o   o ", " '  u  ' "),
+    "alarm": _face("  O   O  ", " '  o  ' "),
+    "stern": _face("  >   <  ", "    -    "),
+    "happy": _face("  ^   ^  ", " '  w  ' "),
 }
 
 COLORS = {"idle": "35", "blink": "35", "look": "35", "alarm": "31", "stern": "33", "happy": "32"}
@@ -167,11 +149,12 @@ def spend(sprite: Sprite, db: str = DEFAULT_DB) -> int:
 
 def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callable[[], bool] = lambda: False) -> int:
     """Follows guard events as they land. Only events newer than when it started."""
+    if not Path(db).is_file():
+        sprite.say("look", f"Waiting for {db}.\nStart `python -m prestige serve` first.")
     while not Path(db).is_file():
-        sprite.say("look", f"Waiting for {db}. Start `python -m prestige serve` first.")
         if stop():
             return 1
-        time.sleep(max(poll, 2.0))
+        time.sleep(max(poll, 1.0))
     conn = sqlite3.connect(db)
     last = _count(conn, "SELECT coalesce(max(id), 0) FROM guard_events")
     sprite.say("idle", f"Watching {db}.\nCtrl+C to stop.")
