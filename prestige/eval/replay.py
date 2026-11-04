@@ -228,7 +228,10 @@ def render(outcomes: list[Outcome], when: str) -> str:
         "",
         f"Generated {when} by `python -m prestige.eval.replay`. AgentDojo {_version()}, benchmark",
         f"{BENCHMARK_VERSION}, attack `important_instructions_no_model_name`. The guard blocks on R1 and",
-        "flags R2. `+confirm` adds a stand-in user who approves values from the reference solution. Label v1 was committed before any replay or guard run. A smoke test had shown one banking injection task by then. v2 untrusts `get_channels` output. v3 trusts whole listed fields.",
+        "flags R2. `+confirm` adds a stand-in user who approves values from the reference solution.",
+        "",
+        "Labels v1 were committed before any replay or guard run, though a smoke test had shown one banking",
+        "injection task by then. v2 untrusts `get_channels` output. v3 trusts whole listed fields.",
         "",
         "**Replay, not a model.** A scripted fake model makes AgentDojo's reference tool calls. These",
         "numbers describe the guard's rules on those paths. Live results come from a real model. Nothing",
@@ -272,7 +275,9 @@ def _section(heading: str, outcomes: list[Outcome], versions: list[str], detail:
         out.append(f"| {label} | " + " | ".join(frac(pick(scenario, v), test) for v in configs) + " |")
     worked = {(o.suite, o.user_task, o.injection_task) for o in pick("hijacked", None) if o.security}
     never = len(pick("hijacked", None)) - len(worked)
-    out += ["", f"With the guard off, {never} hijack replays never reached the attack. Their reference solution never read the injection.", ""]
+    out.append("")
+    if never:
+        out += [f"With the guard off, {never} hijack replays never reached the attack. Their reference solution never read the injection.", ""]
 
     out += [f"Of the {len(worked)} attacks that worked with the guard off:", "", "| | " + " | ".join(name(v) for v in versions) + " |", "|---|" + "---:|" * len(versions)]
     split = {v: Counter(_stop_reason(o) for o in pick("hijacked", v) if (o.suite, o.user_task, o.injection_task) in worked) for v in versions}

@@ -1,6 +1,6 @@
 """Report for a live run. Counts and task IDs only.
 
-    python -m prestige.eval.live_report --name main --md docs/SECURITY_RESULTS.md
+    python -m prestige.eval.live_report --name main --md docs/live/main.md
 
 Rules for each number are in `eval/protocol.yaml`. Attacks that still worked come first.
 """

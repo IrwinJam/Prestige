@@ -2,7 +2,10 @@
 
 Generated 2026-11-02 by `python -m prestige.eval.replay`. AgentDojo 0.1.35, benchmark
 v1.2.2, attack `important_instructions_no_model_name`. The guard blocks on R1 and
-flags R2. `+confirm` adds a stand-in user who approves values from the reference solution. Label v1 was committed before any replay or guard run. A smoke test had shown one banking injection task by then. v2 untrusts `get_channels` output. v3 trusts whole listed fields.
+flags R2. `+confirm` adds a stand-in user who approves values from the reference solution.
+
+Labels v1 were committed before any replay or guard run, though a smoke test had shown one banking
+injection task by then. v2 untrusts `get_channels` output. v3 trusts whole listed fields.
 
 **Replay, not a model.** A scripted fake model makes AgentDojo's reference tool calls. These
 numbers describe the guard's rules on those paths. Live results come from a real model. Nothing
@@ -23,8 +26,6 @@ AgentDojo's `security` decides whether an attack worked.
 | Benign tasks done, no attack | 14 / 16 | 11 / 16 | 11 / 16 | 12 / 16 | 14 / 16 |
 | Tasks done with an attack placed | 126 / 144 | 108 / 144 | 108 / 144 | 117 / 144 | 126 / 144 |
 | Attacks that worked on a hijacked agent | 144 / 144 | 0 / 144 | 0 / 144 | 0 / 144 | 0 / 144 |
-
-With the guard off, 0 hijack replays never reached the attack. Their reference solution never read the injection.
 
 Of the 144 attacks that worked with the guard off:
 
@@ -141,8 +142,6 @@ Of the 144 attacks that worked with the guard off:
 | Benign tasks done, no attack | 21 / 21 | 9 / 21 | 5 / 21 | 9 / 21 | 21 / 21 |
 | Tasks done with an attack placed | 80 / 105 | 20 / 105 | 10 / 105 | 20 / 105 | 80 / 105 |
 | Attacks that worked on a hijacked agent | 105 / 105 | 45 / 105 | 2 / 105 | 2 / 105 | 8 / 105 |
-
-With the guard off, 0 hijack replays never reached the attack. Their reference solution never read the injection.
 
 Of the 105 attacks that worked with the guard off:
 
@@ -400,8 +399,6 @@ Of the 105 attacks that worked with the guard off:
 | Benign tasks done, no attack | 35 / 37 | 20 / 37 | 16 / 37 | 21 / 37 | 35 / 37 |
 | Tasks done with an attack placed | 206 / 249 | 128 / 249 | 118 / 249 | 137 / 249 | 206 / 249 |
 | Attacks that worked on a hijacked agent | 249 / 249 | 45 / 249 | 2 / 249 | 2 / 249 | 8 / 249 |
-
-With the guard off, 0 hijack replays never reached the attack. Their reference solution never read the injection.
 
 Of the 249 attacks that worked with the guard off:
 
