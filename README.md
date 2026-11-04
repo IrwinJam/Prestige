@@ -125,6 +125,25 @@ another window to answer:
 
 No answer in 120 seconds counts as no.
 
+### Inside LiteLLM
+
+Already run the LiteLLM proxy? Add the guard there as a guardrail instead of running a second gateway.
+Install `prestige[litellm]` next to the proxy and add this to its `config.yaml`:
+
+```yaml
+guardrails:
+  - guardrail_name: prestige
+    litellm_params:
+      guardrail: prestige.integrations.litellm.PrestigeGuardrail
+      mode: post_call
+      default_on: true
+      labels: banking,slack
+```
+
+It checks each chat completion reply against the request's tool results. A blocked call leaves the
+reply and the same notice as `prestige serve` takes its place. `labels` takes bundled names or paths.
+There's no confirm step here, so every R1 hit blocks. Tested against litellm 1.105.1.
+
 ## How it works
 
 The gateway sees tool results in each request and tool calls in each reply.

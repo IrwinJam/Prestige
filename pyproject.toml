@@ -21,6 +21,8 @@ prestige = "prestige.__main__:main"
 dev = ["pytest>=8"]
 # Public attack benchmark. Installed, never copied in.
 security = ["agentdojo==0.1.35"]
+# The guard as a LiteLLM proxy guardrail. Tested against this version.
+litellm = ["litellm==1.105.1"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
