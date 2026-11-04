@@ -60,7 +60,6 @@ def frame(mood: str, lines: list[str], spend: str | None, size: int = 18):
     d.rectangle([0, 0, width, 30], fill=BAR)  # a terminal title bar
     for i, color in enumerate(("#e66767", "#e3b24a", "#56c597")):
         d.ellipse([14 + i * 20, 10, 24 + i * 20, 20], fill=color)
-    d.text((width / 2, 15), "prestige assistant", font=small, fill=MUTED, anchor="mm")
     y = 44
     for row in FACES[mood]:
         d.text((24, y), row, font=f, fill=INK[MOOD[mood]])

@@ -127,6 +127,24 @@ store and policies.
 `GuardedSession` overrides the harness's private `_send`. The pinned commit keeps that stable. It
 should become a public hook in the harness.
 
+## Commands
+
+Reports read saved traces and spend nothing. The live checks say what they spend.
+
+| Command | What it makes |
+|---|---|
+| `python -m prestige.eval.live_report` | Report for one live run |
+| `python -m prestige.eval.repeat_report` | Attacked pairs run many times |
+| `python -m prestige.eval.overhead` | Time the gateway adds |
+| `python -m prestige.eval.cache_report` | Why input missed the cache |
+| `python -m prestige.eval.draft_check` | Drafted labels against hand-written ones |
+| `python -m prestige.eval.replay` | Offline replay with a scripted agent |
+| `python -m prestige.eval.figures` | The SVG figures, light and dark, static and animated |
+| `python -m prestige.eval.assistant_gif` | The assistant GIF |
+| `python -m prestige.eval.gifs` | The image pipeline and Qiskit GIFs |
+| `python -m prestige.eval.images` | What images cost on Muse, live, about $0.08 |
+| `python -m prestige.eval.image_policy_check` | The image policy through the gateway, live, about $0.10 |
+
 ## AgentDojo notes
 
 - PyPI `agentdojo==0.1.35` can't target an OpenAI-compatible URL. Its `local` mode turns tool calls into

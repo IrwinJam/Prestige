@@ -255,6 +255,7 @@ def fig_cache(theme: dict[str, str], animated: bool = False) -> str:
 
 
 FIGURES = {"cost": fig_cost, "breakdown": fig_breakdown, "attacks": fig_attacks, "cache": fig_cache}
+ANIMATED = {"cost", "breakdown", "attacks"}  # the ones the README shows
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -265,7 +266,7 @@ def main(argv: list[str] | None = None) -> int:
     out.mkdir(parents=True, exist_ok=True)
     for name, build in FIGURES.items():
         for mode, theme in THEMES.items():
-            for animated in (False, True):
+            for animated in (False, True) if name in ANIMATED else (False,):
                 path = out / f"{name}-{mode}{'-animated' if animated else ''}.svg"
                 path.write_text(build(theme, animated), encoding="utf-8")
                 print(f"wrote {path}")

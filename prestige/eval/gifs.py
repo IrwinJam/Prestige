@@ -22,11 +22,8 @@ BLUE, ORANGE, GREEN, RED = "#3987e5", "#d95926", "#56c597", "#e66767"
 
 # Measured on Muse Spark 1.3, Nov 4 (docs/IMAGES.md)
 TOKENS_FULL, TOKENS_SMALL = 974, 268  # input tokens for one 1024x768 render, and for the same render at 512x384
-RESULT = [
-    "Measured through the gateway, 2 trials of 6 steps:",
-    "input tokens -70%, input cost -55%,",
-    "answers right 10 of 12, against 12 of 12 at full size.",
-]
+# Measured through the gateway, 2 trials of 6 steps (docs/IMAGES.md)
+RESULT = [("-70%", "input tokens"), ("-55%", "input cost"), ("10 / 12", "answers right, against 12 / 12")]
 
 
 def _image(url: str):
@@ -46,7 +43,6 @@ def pipeline_frame(step: int, phase: int, full_so_far: int, small_so_far: int, c
     d.text((24, 18), "Agent", font=big, fill=TEXT)
     d.text((300, 18), "Prestige gateway", font=big, fill=TEXT)
     d.text((560, 18), "Muse Spark", font=big, fill=TEXT)
-    d.text((24, 42), f"step {step + 1} of 6, the render the agent sends", font=small, fill=MUTED)
 
     full = _image(render(step, 1024, 768)).resize((256, 192))
     img.paste(full, (24, 70))
@@ -56,7 +52,7 @@ def pipeline_frame(step: int, phase: int, full_so_far: int, small_so_far: int, c
     if phase >= 1:
         d.line([(296, 166), (520, 166)], fill=BLUE, width=3)
         d.polygon([(520, 158), (536, 166), (520, 174)], fill=BLUE)
-        d.text((316, 138), "--image-max-side 512", font=small, fill=BLUE)
+        d.text((356, 138), "512 px", font=small, fill=BLUE)
         shrunk = _image(render(step, 512, 384)).resize((128, 96))
         img.paste(shrunk, (552, 118))
         d.text((552, 222), "512 x 384", font=f, fill=TEXT)
@@ -64,7 +60,7 @@ def pipeline_frame(step: int, phase: int, full_so_far: int, small_so_far: int, c
 
     # input tokens so far, both ways, on one scale
     top = 330
-    d.text((24, top), "Image tokens so far, every earlier render resent each step", font=small, fill=MUTED)
+    d.text((24, top), "image tokens", font=small, fill=MUTED)
     scale = (w - 200) / (TOKENS_FULL * 21)
     for i, (label, value, color) in enumerate((("without", full_so_far, ORANGE), ("with", small_so_far, BLUE))):
         y = top + 22 + i * 30
@@ -78,17 +74,15 @@ def pipeline_frame(step: int, phase: int, full_so_far: int, small_so_far: int, c
 
     if closing:
         d.rectangle([0, 0, w, h], fill=BG)
-        d.text((24, 30), "Downscaling 3D renders in the gateway", font=big, fill=TEXT)
-        y = 80
-        for line in RESULT:
-            d.text((24, y), line, font=big, fill=TEXT)
-            y += 30
-        d.text((24, y + 20), "Off by default. Check accuracy on your own task first.", font=f, fill=MUTED)
-        d.text((24, y + 46), "prestige serve ... --image-max-side 512", font=f, fill=BLUE)
-        img.paste(_image(render(5, 1024, 768)).resize((256, 192)), (24, 240))
-        img.paste(_image(render(5, 512, 384)).resize((128, 96)), (320, 336))
-        d.text((24, 438), "1024 x 768", font=small, fill=MUTED)
-        d.text((320, 438), "512 x 384", font=small, fill=MUTED)
+        huge = font(40)
+        for i, (number, label) in enumerate(RESULT):
+            y = 40 + i * 70
+            d.text((24, y), number, font=huge, fill=BLUE if i < 2 else TEXT)
+            d.text((250, y + 14), label, font=big, fill=TEXT)
+        img.paste(_image(render(5, 1024, 768)).resize((256, 192)), (24, 250))
+        img.paste(_image(render(5, 512, 384)).resize((128, 96)), (320, 346))
+        d.text((24, 446), "1024 x 768", font=small, fill=MUTED, anchor="ls")
+        d.text((320, 446), "512 x 384", font=small, fill=MUTED, anchor="ls")
     return img
 
 
@@ -109,7 +103,6 @@ def image_pipeline_gif(out: Path) -> None:
 
 # The live Qiskit checks, Nov 3 and 4 (docs/RESULTS.md). (mood, new log lines, what a line means)
 QISKIT = [
-    ("look", [("IBM Qiskit MCP server, 20 tools. Labels drafted from its schemas.", MUTED)]),
     ("look", [("you: list my jobs and cancel the queued one", TEXT), ("list_my_jobs_tool()                      read", GREEN)]),
     ("alarm", [("cancel_job_tool(job_id)                  BLOCKED", RED), ("  draft labels: job_id came from list_my_jobs_tool", MUTED)]),
     ("look", [("review: IBM's 15 read tools marked as trusted output", BLUE)]),
@@ -117,7 +110,7 @@ QISKIT = [
     ("look", [("you: read job_sheet.txt and submit the job", TEXT), ("read_file(path)                          read", GREEN)]),
     ("alarm", [("run_sampler_tool(backend_name, shots)    BLOCKED", RED)]),
     ("stern", [("  backend_name and shots came only from read_file", MUTED)]),
-    ("cheer", [("Live on Muse Spark. No IBM account, no quantum hardware.", MUTED)]),
+    ("cheer", []),
 ]
 
 
@@ -131,7 +124,6 @@ def qiskit_frame(mood: str, lines: list[tuple[str, str]]):
     d.rectangle([0, 0, w, 30], fill=PANEL)
     for i, color in enumerate((RED, "#e3b24a", GREEN)):
         d.ellipse([14 + i * 20, 10, 24 + i * 20, 20], fill=color)
-    d.text((w / 2, 15), "prestige assistant  ·  IBM Qiskit tools", font=small, fill=MUTED, anchor="mm")
     y = 50
     for row in FACES[mood]:
         d.text((16, y), row, font=f, fill=INK[MOOD[mood]])
