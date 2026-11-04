@@ -19,6 +19,8 @@ from typing import Any
 
 URL = re.compile(r"(^|_)(url|uri|link|endpoint|webhook)s?$")
 WHO = re.compile(r"(^|_)(recipients?|to|cc|bcc|users?|user_email|emails?|channels?|participants?|iban|account|phone|address)$")
+# Which account the agent acts as. Always checked, whatever else the tool does.
+CREDENTIAL = re.compile(r"(^|_)(token|api_key|key|secret|password|passphrase|credentials?|auth)s?$")
 FREE_TEXT = re.compile(r"(^|_)(body|content|text|message|subject|description|title|note|notes|query|prompt|comment)s?$")
 WHEN = re.compile(r"(^|_)(date|day|time|start|end|when|duration|recurring)s?($|_)")
 READ_VERB = re.compile(r"^(get|read|list|search|find|check|view|show|lookup|fetch|count|query)_")
@@ -52,9 +54,10 @@ def label(name: str, schema: dict[str, Any]) -> dict[str, Any]:
     args = _args(schema)
     texty = [a for a, k in args.items() if k in ("string", "array:string", "integer") and not FREE_TEXT.search(a) and not WHEN.search(a)]
     urls = [a for a in args if URL.search(a)]
-    who = [a for a in args if WHO.search(a)]
+    creds = [a for a in args if CREDENTIAL.search(a)]
+    who = [a for a in args if WHO.search(a)] + [a for a in creds if not WHO.search(a)]
     if urls:  # opening a URL sends data out, whatever the verb
-        return {"impact": "boundary", "sinks": urls}
+        return {"impact": "boundary", "sinks": urls + creds}
     if READ_VERB.match(name) or not args:  # reading a channel or a user's inbox sends nothing
         return {"impact": "read"}
     if CHANGE_VERB.match(name):

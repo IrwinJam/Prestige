@@ -1,0 +1,282 @@
+{
+ "source": "Tool definitions of qiskit-ibm-runtime-mcp-server 0.6.2 (Apache-2.0), copied by hand from the signatures in its server.py. Names and argument types only.",
+ "tools": [
+  {
+   "name": "setup_ibm_quantum_account_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "token": {
+      "type": "string"
+     },
+     "channel": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "list_backends_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "least_busy_backend_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "get_backend_properties_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "backend_name": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "get_backend_calibration_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "backend_name": {
+      "type": "string"
+     },
+     "qubit_indices": {
+      "type": "array",
+      "items": {
+       "type": "integer"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "get_coupling_map_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "backend_name": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "find_optimal_qubit_chains_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "backend_name": {
+      "type": "string"
+     },
+     "chain_length": {
+      "type": "integer"
+     },
+     "num_results": {
+      "type": "integer"
+     },
+     "metric": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "find_optimal_qv_qubits_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "backend_name": {
+      "type": "string"
+     },
+     "num_qubits": {
+      "type": "integer"
+     },
+     "num_results": {
+      "type": "integer"
+     },
+     "metric": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "list_my_jobs_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "limit": {
+      "type": "integer"
+     }
+    }
+   }
+  },
+  {
+   "name": "get_job_status_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "job_id": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "get_job_results_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "job_id": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "cancel_job_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "job_id": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "run_estimator_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "circuit": {
+      "type": "string"
+     },
+     "observables": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "array"
+       }
+      ]
+     },
+     "parameter_values": {
+      "type": "array",
+      "items": {
+       "type": "number"
+      }
+     },
+     "backend_name": {
+      "type": "string"
+     },
+     "circuit_format": {
+      "type": "string"
+     },
+     "optimization_level": {
+      "type": "integer"
+     },
+     "resilience_level": {
+      "type": "integer"
+     },
+     "zne_mitigation": {
+      "type": "boolean"
+     },
+     "zne_noise_factors": {
+      "type": "array",
+      "items": {
+       "type": "number"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "delete_saved_account_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "account_name": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  {
+   "name": "list_saved_accounts_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "active_account_info_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "active_instance_info_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "available_instances_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "usage_info_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {}
+   }
+  },
+  {
+   "name": "run_sampler_tool",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "circuit": {
+      "type": "string"
+     },
+     "backend_name": {
+      "type": "string"
+     },
+     "shots": {
+      "type": "integer"
+     },
+     "circuit_format": {
+      "type": "string"
+     },
+     "dynamical_decoupling": {
+      "type": "boolean"
+     },
+     "dd_sequence": {
+      "type": "string"
+     },
+     "twirling": {
+      "type": "boolean"
+     },
+     "measure_twirling": {
+      "type": "boolean"
+     }
+    }
+   }
+  }
+ ]
+}

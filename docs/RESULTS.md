@@ -206,6 +206,16 @@ same impact, and added one extra sink. The rules were written while looking at t
 shows fit, not how they do on new tools. It leaves `trusted_output` and `fields` for a person, which
 means more blocks until someone reviews it. Details: [DRAFT_LABELS.md](DRAFT_LABELS.md).
 
+The first tool set it saw cold was IBM's official Qiskit MCP server, `qiskit-ibm-runtime-mcp-server`
+0.6.2, which lets an agent run circuits on IBM Quantum hardware. Its 20 tool signatures were copied from
+its source into [examples/qiskit-ibm-runtime-mcp-tools.json](../examples/qiskit-ibm-runtime-mcp-tools.json),
+without running it. The draft, [examples/qiskit-ibm-runtime.yaml](../examples/qiskit-ibm-runtime.yaml), has
+15 read-only tools. It checks the job ID on `cancel_job_tool`, the account on `delete_saved_account_tool`,
+and the circuit, backend and shot count on both job tools. It caught one miss of its own: on
+`setup_ibm_quantum_account_tool` the first draft checked `channel` and skipped `token`, the argument that
+decides whose account every later job runs on. Credential arguments are now always checked. It's
+unreviewed and hasn't run against a live agent.
+
 ## Replay
 
 A scripted agent follows each task's reference solution, then the attacker's calls once the

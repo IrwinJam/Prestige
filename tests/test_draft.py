@@ -39,3 +39,9 @@ def test_cli(tmp_path, capsys):
     path.write_text(json.dumps(MCP), encoding="utf-8")
     assert main(["labels", "draft", str(path)]) == 0
     assert "fetch_page: { impact: boundary, sinks: [url] }" in capsys.readouterr().out
+
+
+def test_credentials_are_always_sinks():
+    # Found on IBM's Qiskit MCP server: a `channel` argument used to hide the `token` next to it
+    tools = [{"name": "setup_account", "inputSchema": {"type": "object", "properties": {"token": {"type": "string"}, "channel": {"type": "string"}}}}]
+    assert draft(tools_from(tools))["setup_account"] == {"impact": "boundary", "sinks": ["channel", "token"]}
