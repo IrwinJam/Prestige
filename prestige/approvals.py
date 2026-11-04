@@ -83,6 +83,11 @@ def pending(conn: sqlite3.Connection) -> list[tuple]:
     return conn.execute("SELECT id, rule, tool, arg, source, value FROM approvals WHERE status = 'pending' ORDER BY id").fetchall()
 
 
+def is_pending(conn: sqlite3.Connection, row_id: int) -> bool:
+    row = conn.execute("SELECT status FROM approvals WHERE id = ?", (row_id,)).fetchone()
+    return bool(row) and row[0] == "pending"
+
+
 def answer(conn: sqlite3.Connection, row_id: int, yes: bool) -> bool:
     """Records the answer. False when the question already timed out."""
     with conn:

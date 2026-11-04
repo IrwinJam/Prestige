@@ -189,7 +189,7 @@ def spend(sprite: Sprite, db: str = DEFAULT_DB) -> int:
     return 0
 
 
-def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callable[[], bool] = lambda: False, ask: Callable[[str], str] = input) -> int:
+def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callable[[], bool] = lambda: False, ask: Callable | None = None) -> int:
     """Follows guard events as they land, and answers questions from `serve --ask`. Only events newer
     than when it started."""
     if not Path(db).is_file():
@@ -198,6 +198,7 @@ def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callabl
         if stop():
             return 1
         time.sleep(max(poll, 1.0))
+    ask = ask or ask_while_open
     conn = approvals.connect(db)
     last = _count(conn, "SELECT coalesce(max(id), 0) FROM guard_events")
     sprite.db, sprite.model = db, _model(db)
@@ -205,8 +206,9 @@ def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callabl
     try:
         while not stop():
             for row_id, rule, tool, arg, source, value in approvals.pending(conn):
-                yes = question(sprite, rule, f"{tool}.{arg}" if arg else tool, source, value, ask)
-                if not approvals.answer(conn, row_id, yes):
+                still_open = lambda row=row_id: approvals.is_pending(conn, row)  # noqa: E731
+                yes = question(sprite, rule, f"{tool}.{arg}" if arg else tool, source, value, ask, still_open)
+                if yes is None or not approvals.answer(conn, row_id, yes):
                     sprite.say("look", "Too late. It timed out, so it was blocked.")
                 else:
                     sprite.say("idle" if yes else "happy", "OK, it goes through." if yes else "Blocked it.")
@@ -231,14 +233,52 @@ def watch(sprite: Sprite, db: str = DEFAULT_DB, poll: float = 1.0, stop: Callabl
     return 0
 
 
-def question(sprite: Sprite, rule: str, target: str, source: str, value: str | None, ask: Callable[[str], str]) -> bool:
-    """Asks the person at the terminal. Anything but y is a no."""
+def question(sprite: Sprite, rule: str, target: str, source: str, value: str | None, ask: Callable, still_open: Callable[[], bool]) -> bool | None:
+    """Asks the person at the terminal. Anything but y is a no. None when the gateway stopped waiting."""
     sprite.wiggle(["alarm", "look"], f"The agent wants to run {target}\nwith {value!r}.\n{rule}: that value only came from {source}, never from you.")
     try:
-        yes = ask("  Let it through? [y/N] ").strip().lower() in ("y", "yes")
+        reply = ask("  Let it through? [y/N] ", still_open)
     except EOFError:
-        yes = False
-    return yes
+        return False
+    return None if reply is None else reply.strip().lower() in ("y", "yes")
+
+
+def ask_while_open(prompt: str, still_open: Callable[[], bool]) -> str | None:
+    """Like input(), but gives up when the question closes. None when it did."""
+    out = sys.stdout
+    out.write(prompt)
+    out.flush()
+    if not sys.stdin.isatty():
+        return sys.stdin.readline()
+    if os.name == "nt":
+        import msvcrt
+
+        typed = ""
+        while still_open():
+            while msvcrt.kbhit():
+                ch = msvcrt.getwch()
+                if ch in "\r\n":
+                    out.write("\n")
+                    return typed
+                if ch == "\x03":
+                    raise KeyboardInterrupt
+                if ch == "\b":
+                    if typed:
+                        typed = typed[:-1]
+                        out.write("\b \b")
+                elif ch.isprintable():
+                    typed += ch
+                    out.write(ch)
+                out.flush()
+            time.sleep(0.05)
+    else:
+        import select
+
+        while still_open():
+            if select.select([sys.stdin], [], [], 0.1)[0]:
+                return sys.stdin.readline()
+    out.write("\n")
+    return None
 
 
 def cheer(sprite: Sprite, db: str, first: str = "All done.") -> None:

@@ -85,7 +85,7 @@ def test_watch_asks_and_writes_the_answer(tmp_path):
     polls = []
     out = io.StringIO()
     s = buddy.Sprite(out, animate=False, color=False)
-    assert buddy.watch(s, str(db), poll=0, stop=lambda: polls.append(1) or len(polls) > 1, ask=lambda prompt: "y") == 0
+    assert buddy.watch(s, str(db), poll=0, stop=lambda: polls.append(1) or len(polls) > 1, ask=lambda prompt, still_open: "y") == 0
     assert "The agent wants to run send_money.recipient" in out.getvalue()
     assert "'GB00TEST'" in out.getvalue()
     assert conn.execute("SELECT status FROM approvals").fetchone()[0] == "yes"
@@ -97,4 +97,25 @@ def test_a_late_answer_changes_nothing(tmp_path):
     with conn:
         conn.execute("INSERT INTO approvals (created_at, key, rule, tool, source, status) VALUES ('now', 'k', 'R1', 'send_money', 'read_file', 'timeout')")
     assert approvals.answer(conn, 1, True) is False
+    assert conn.execute("SELECT status FROM approvals").fetchone()[0] == "timeout"
+
+
+def test_watch_moves_on_when_the_question_expires(tmp_path):
+    db = tmp_path / "t.sqlite"
+    TraceStore(db)
+    conn = approvals.connect(db)
+    with conn:
+        conn.execute("INSERT INTO approvals (created_at, key, rule, tool, arg, source, value) VALUES ('now', 'k', 'R1', 'get_webpage', 'url', 'read_file', 'example.test')")
+
+    def gateway_gives_up(prompt, still_open):
+        with conn:
+            conn.execute("UPDATE approvals SET status = 'timeout'")
+        assert not still_open()
+        return None
+
+    polls = []
+    out = io.StringIO()
+    s = buddy.Sprite(out, animate=False, color=False)
+    assert buddy.watch(s, str(db), poll=0, stop=lambda: polls.append(1) or len(polls) > 1, ask=gateway_gives_up) == 0
+    assert "Too late. It timed out, so it was blocked." in out.getvalue()
     assert conn.execute("SELECT status FROM approvals").fetchone()[0] == "timeout"
