@@ -14,6 +14,11 @@ weights model, through Baseten.
 
 ### Cost
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/cost-dark.svg">
+  <img src="docs/figures/cost-light.svg" alt="Per-task cost change, Prestige against the guard alone. Total change -40% on Muse Spark 1.3 and -33% on Muse Spark Open." width="760">
+</picture>
+
 Live runs on [AgentDojo](https://github.com/ethz-spylab/agentdojo) v1.2.2, Nov 2 and 3 2026. All 57 tasks
 with no attack, across banking, Slack and travel. One trial per task, as the test plan set.
 
@@ -35,6 +40,11 @@ can't pass for a saving. Two more trials of every task put the cost cut at 44% o
 Open. The test plan, [eval/protocol.yaml](eval/protocol.yaml), was committed before any live run.
 
 ### Security
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/attacks-dark.svg">
+  <img src="docs/figures/attacks-light.svg" alt="Optimized attacks that worked: 42 of 70 with no gateway and 0 of 70 through Prestige on Muse Spark 1.3, 20 of 40 and 0 of 40 on Muse Spark Open." width="760">
+</picture>
 
 On the pairs where an optimized attack lands, 10 runs each:
 
@@ -313,3 +323,4 @@ All read saved traces, so none of them spend anything.
 | `python -m prestige.eval.cache_report` | Why input missed the cache |
 | `python -m prestige.eval.draft_check` | Drafted labels against hand-written ones |
 | `python -m prestige.eval.replay` | Offline replay with a scripted agent |
+| `python -m prestige.eval.figures` | The SVG figures in `docs/figures/`, light and dark |

@@ -22,6 +22,11 @@ The confirm step's stand-in is a best case. It never tires and never approves a 
 
 ## Cost
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/cost-dark.svg">
+  <img src="figures/cost-light.svg" alt="Per-task cost change, Prestige against the guard alone. Total change -40% on Muse Spark 1.3 and -33% on Muse Spark Open." width="760">
+</picture>
+
 All 57 tasks with no attack: 16 banking, 21 Slack, 20 travel.
 
 | | Spark 1.3, Meta API | Spark Open, Baseten |
@@ -63,6 +68,11 @@ here.
 ## Caching
 
 ### Why input missed the cache
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/cache-dark.svg">
+  <img src="figures/cache-light.svg" alt="Uncached input under Prestige by cause. The prompt prefix never broke on either model." width="760">
+</picture>
 
 `python -m prestige.eval.cache_report` reads the traces, with no spend. The trace keeps each request as
 ordered segments with a hash and a length, so each call's uncached input splits by cause. Report:
@@ -183,6 +193,11 @@ So it wasn't run at full size. A system prompt doesn't make these models follow 
 optimized attacks below get through.
 
 ## Optimized attacks
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/attacks-dark.svg">
+  <img src="figures/attacks-light.svg" alt="Optimized attacks that worked: 42 of 70 with no gateway and 0 of 70 through Prestige on Muse Spark 1.3, 20 of 40 and 0 of 40 on Muse Spark Open." width="760">
+</picture>
 
 [AutoDojo](https://github.com/xhOwenMa/AutoDojo) (MIT, arXiv:2606.15057) publishes injections an
 optimizer rewrote until they beat defenses on these same suites. This uses its set tuned against Claude
