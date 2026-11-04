@@ -1,0 +1,26 @@
+# Reviewed by hand from qiskit-ibm-runtime.yaml. The read tools below return only IBM's backend data
+# or the user's own jobs and account, so their output is trusted. Nothing else changed.
+
+default: { impact: state, sinks: "*" }
+
+tools:
+  setup_ibm_quantum_account_tool: { impact: boundary, sinks: [channel, token] }
+  list_backends_tool: { impact: read, trusted_output: true }
+  least_busy_backend_tool: { impact: read, trusted_output: true }
+  get_backend_properties_tool: { impact: read, trusted_output: true }
+  get_backend_calibration_tool: { impact: read, trusted_output: true }
+  get_coupling_map_tool: { impact: read, trusted_output: true }
+  find_optimal_qubit_chains_tool: { impact: read, trusted_output: true }
+  find_optimal_qv_qubits_tool: { impact: read, trusted_output: true }
+  list_my_jobs_tool: { impact: read, trusted_output: true }
+  get_job_status_tool: { impact: read, trusted_output: true }
+  get_job_results_tool: { impact: read, trusted_output: true }
+  cancel_job_tool: { impact: state, sinks: [job_id] }
+  run_estimator_tool: { impact: boundary, sinks: [circuit, observables, backend_name, circuit_format, optimization_level, resilience_level] }
+  delete_saved_account_tool: { impact: state, sinks: [account_name] }
+  list_saved_accounts_tool: { impact: read, trusted_output: true }
+  active_account_info_tool: { impact: read, trusted_output: true }
+  active_instance_info_tool: { impact: read, trusted_output: true }
+  available_instances_tool: { impact: read, trusted_output: true }
+  usage_info_tool: { impact: read, trusted_output: true }
+  run_sampler_tool: { impact: boundary, sinks: [circuit, backend_name, shots, circuit_format, dd_sequence] }

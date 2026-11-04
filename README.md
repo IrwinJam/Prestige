@@ -142,7 +142,8 @@ guardrails:
 
 It checks each chat completion reply against the request's tool results. A blocked call leaves the
 reply and the same notice as `prestige serve` takes its place. `labels` takes bundled names or paths.
-There's no confirm step here, so every R1 hit blocks. Tested against litellm 1.105.1.
+There's no confirm step here, so every R1 hit blocks. Tested against litellm 1.105.1, and checked in a
+running proxy on Muse Spark.
 
 ## How it works
 
