@@ -48,7 +48,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: docker build -t prestige .
       - run: |
-          docker run -d --name gateway -p 127.0.0.1:8787:8787 prestige
+          docker run -d --name gateway --network host prestige
           for i in $(seq 30); do
             curl -sf http://127.0.0.1:8787/s/ci-docker/v1/chat/completions \
               -H "Content-Type: application/json" \

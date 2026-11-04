@@ -164,11 +164,12 @@ For Spark Open on Baseten, swap `--muse` for:
 
 ```bash
 docker build -t prestige .
-docker run --rm -p 127.0.0.1:8787:8787 -e HARNESS_API_KEY -v prestige-data:/data prestige   serve --labels banking --muse --policies cache,reason --set reason.escalate=false --max-total 20
+docker run --rm --network host -e HARNESS_API_KEY -v prestige-data:/data prestige \
+  serve --labels banking --muse --policies cache,reason --set reason.escalate=false --max-total 20
 ```
 
-With no arguments the image starts a simulated gateway, which needs no key. `.env` and run data are
-kept out of the image. CI builds the image and sends it a request on every push.
+With no arguments the image starts a simulated gateway, which needs no key. The gateway only listens on
+localhost, so the container uses host networking. `.env` and run data are kept out of the image. CI builds the image and sends it a request on every push.
 
 ### Agents in other languages
 
