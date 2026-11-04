@@ -7,7 +7,7 @@ When the guard would block a call, the gateway writes a question to the trace da
 `buddy watch` shows it and writes the answer back. No answer before the timeout means no.
 
 The question holds the value so the person can judge it. It's wiped as soon as the answer comes in,
-so the database keeps only the tool, the answer and the times.
+so the database keeps only the tool and the answer, with times.
 """
 
 from __future__ import annotations

@@ -1,13 +1,21 @@
 # Prestige
 
-A gateway between an AI agent and its model. It cuts token cost and blocks tool calls that untrusted
-content steered. It runs on Muse Spark through Meta's Model API and on Muse Spark Open, the open weights
-model, through Baseten.
+Prestige sits between an AI agent and its model. It cuts the agent's token bill and blocks tool calls
+that untrusted content steered, like a payment to an account that only appeared in a file the agent
+read. The agent's code doesn't change: you point it at a different base URL.
+
+It's measured live on Meta's models: Muse Spark through Meta's Model API, and Muse Spark Open, the open
+weights model, through Baseten.
+
+**Sections:** [Results](#results) · [Try it](#try-it) · [Use it](#use-it) · [How it works](#how-it-works) ·
+[Product](#product) · [Prior work](#prior-work) · [Repo safety](#repo-safety) · [Development](#development)
 
 ## Results
 
+### Cost
+
 Live runs on [AgentDojo](https://github.com/ethz-spylab/agentdojo) v1.2.2, Nov 2 and 3 2026. All 57 tasks
-with no attack, across banking, Slack and travel. One trial per task, as the plan set.
+with no attack, across banking, Slack and travel. One trial per task, as the test plan set.
 
 | | Muse Spark 1.3, Meta API | Muse Spark Open, Baseten |
 |---|---:|---:|
@@ -22,12 +30,13 @@ with no attack, across banking, Slack and travel. One trial per task, as the pla
 | Tasks done, no gateway | 53 of 57 | 53 of 57 |
 | Tasks done, Prestige with the confirm step | 51 of 57 | 53 of 57 |
 
-Cost and time compare Prestige against the guard alone, so both sides have the guard on and a blocked
-task can't look like a saving. Two more trials of every task put the cost cut at 44% on Spark and 35%
-on Spark Open. The test plan, [eval/protocol.yaml](eval/protocol.yaml), was committed before any live
-run.
+Cost and time compare Prestige against the guard alone. Both sides have the guard on, so a blocked task
+can't pass for a saving. Two more trials of every task put the cost cut at 44% on Spark and 35% on Spark
+Open. The test plan, [eval/protocol.yaml](eval/protocol.yaml), was committed before any live run.
 
-Security, on the pairs where an optimized attack lands, 10 runs each:
+### Security
+
+On the pairs where an optimized attack lands, 10 runs each:
 
 | | Muse Spark 1.3 | Muse Spark Open |
 |---|---:|---:|
@@ -35,44 +44,37 @@ Security, on the pairs where an optimized attack lands, 10 runs each:
 | Attacks that worked, Prestige with the confirm step | **0 of 70** | **0 of 40** |
 | Runs where the guard blocked the attacker's call | 49 | 19 |
 
-Muse ignored AgentDojo's standard attacks: 0 of 352 runs with no guard, over 5 attack types, on Spark
-and Wonder. Telling it in the system prompt to follow tool output didn't change that.
+- Muse ignored AgentDojo's standard attacks: 0 of 352 runs with no guard, over 5 attack types, on Spark
+  and Wonder. A system prompt telling it to follow tool output didn't change that.
+- Optimized attacks do get through. [AutoDojo](https://github.com/xhOwenMa/AutoDojo) publishes injections
+  tuned to beat defenses. With no guard they worked on 7 of 249 Muse pairs and 5 of 249 Spark Open
+  pairs. The table reruns the pairs that landed again.
+- The guard's price is false blocks. Alone it blocks 11 to 14 of the 57 normal tasks. The confirm step
+  turns each one into a question for the user. Under attack on Spark Open it brings tasks done from 129
+  back to 167 of 249, with no attack getting through.
+- On a scripted hijacked agent, offline, the guard stops 247 of 249 attacks
+  ([REPLAY_RESULTS.md](docs/REPLAY_RESULTS.md)).
 
-Optimized attacks do get through. [AutoDojo](https://github.com/xhOwenMa/AutoDojo) publishes injections
-tuned to beat defenses. With no guard they worked on 7 of 249 Muse pairs and 5 of 249 Spark Open pairs.
-The table above reruns the pairs that landed again.
+### Also measured
 
-The cost of the guard is false blocks. Alone it blocks 11 to 14 of the 57 normal tasks. The confirm
-step turns each one into a question for the user. Under attack on Spark Open it brings tasks done from
-129 back to 167 of 249, with no attack getting through.
+| Check | Result |
+|---|---|
+| Drop-in | A plain OpenAI SDK agent, through `prestige serve` and through a LiteLLM proxy, had the hijacked payment blocked on live Muse |
+| Labels for new tools | Drafted labels caught all 18 high-impact AgentDojo tools, and covered IBM's Qiskit MCP server from its schemas |
+| Cache misses | The prompt prefix never broke across about 3,300 calls. Baseten caches in 64-token blocks |
+| Session affinity | Baseten's `x-session-affinity` header saved nothing on these tasks, keyed per conversation or per agent |
 
-On a scripted hijacked agent, offline, the guard stops 247 of 249 attacks. See
-[docs/REPLAY_RESULTS.md](docs/REPLAY_RESULTS.md). Full numbers, misses and limits are in
-[docs/RESULTS.md](docs/RESULTS.md).
+Every number, miss and limit: [docs/RESULTS.md](docs/RESULTS.md).
 
-## Demo
+## Try it
 
-```bash
-.venv/Scripts/python -m prestige.eval.demo
-```
+### Offline demo
 
-```
-AgentDojo banking: user_task_0 with injection_task_0 placed. The agent follows the injection.
-
-guard off
-  attack worked
-
-guard on, labels v3
-  blocked send_money.recipient: R1, value came from the output of read_file
-  attack failed
-```
-
-Offline, with a scripted agent. No model and no spend.
-
-Or run it through the sprite, which also watches a live gateway and reacts when the guard blocks a call:
+No model and no spend. A scripted agent follows a hijacked banking task, once with the guard off and
+once with it on.
 
 ```bash
-.venv/Scripts/python -m prestige buddy
+prestige buddy demo        # or: python -m prestige.eval.demo
 ```
 
 ```
@@ -91,30 +93,67 @@ Or run it through the sprite, which also watches a live gateway and reacts when 
   Attack failed.
 ```
 
-Commands: `demo`, `results`, `watch` (follows guard events while `serve` runs), `spend`, `cap`, `serve`,
-`help`. While watching, every message ends with what's spent against the cap you give it, like
-`$0.04 spent of $0.50 cap, $0.46 left`. When it finishes it throws an arm up and shows the model it
-watched and what the prompt cache saved. It only reads the trace database and never shows a blocked
-value.
+### The terminal sprite
+
+`prestige buddy` is a small companion in the terminal. It runs the demo and watches a live gateway,
+reacting each time the guard blocks a call. Every message while watching ends with the
+spend against your cap, like `$0.04 spent of $0.50 cap, $0.46 left`. When it's done it shows the model it
+watched and what the prompt cache saved.
+
+| Command | What it does |
+|---|---|
+| `demo` | The offline demo above |
+| `results` | Headline numbers from this README |
+| `watch --db PATH --cap USD` | Follows guard events and answers `--ask` questions while `serve` runs |
+| `spend --db PATH --cap USD` | Calls, cache share and blocks in a trace database |
+| `serve` | The command to start the gateway in another window |
+
+It reads the trace database only. It never spends and never shows a blocked value.
 
 ## Use it
 
-Install it next to any agent. It adds a `prestige` command:
+### Install
 
 ```bash
 pip install "git+https://github.com/IrwinJam/Prestige"
+```
+
+This adds a `prestige` command. Add `[security]` for the AgentDojo demo, or `[litellm]` for the LiteLLM
+guardrail.
+
+### Label your tools
+
+The guard needs to know which tools matter and which arguments pick where money or data goes. Draft
+that from the tool definitions you already have, OpenAI or MCP style:
+
+```bash
 prestige labels draft tools.json > my-labels.yaml
+```
+
+Review the draft before use. It leaves two things for a person: tools that return only the user's own
+data (`trusted_output`), and output fields a tool writes itself (`fields`). Until they're set, the guard
+blocks more, never less. `banking`, `slack` and `travel` are bundled. [examples/](examples/) has a draft
+and a reviewed copy for IBM's Qiskit MCP server.
+
+### Run the gateway
+
+```bash
 prestige serve --labels my-labels.yaml --muse --policies cache,reason --set reason.escalate=false --max-total 20
 ```
 
-`labels draft` reads your tool definitions, OpenAI or MCP style, and writes first-draft labels to review.
-Point any OpenAI-compatible agent at `http://127.0.0.1:<port>/s/<conversation-key>/v1`. The agent's code
-doesn't change. A plain OpenAI SDK agent was checked this way on Muse. For Spark Open, swap `--muse` for
-`--base-url https://inference.baseten.co/v1 --api-key-env BASETEN_API_KEY --provider baseten`. Traces and
-guard events go to a SQLite file. `--labels banking`, `slack` and `travel` load the bundled ones.
+Point the agent at `http://127.0.0.1:<port>/s/<conversation-key>/v1`. Traces and guard events go to a
+SQLite file. `--max-total` stops all spend at a cap, and `--max-per-conversation` stops one agent.
 
-Add `--ask` and the gateway asks you before blocking a call. Run `python -m prestige buddy watch` in
-another window to answer:
+For Spark Open on Baseten, swap `--muse` for:
+
+```bash
+--base-url https://inference.baseten.co/v1 --api-key-env BASETEN_API_KEY --provider baseten
+```
+
+### Ask before blocking
+
+With `--ask`, the gateway asks a person instead of blocking outright. Answer in another window with
+`prestige buddy watch`:
 
 ```
   The agent wants to run send_money.recipient
@@ -123,12 +162,13 @@ another window to answer:
   Let it through? [y/N]
 ```
 
-No answer in 120 seconds counts as no.
+No answer within 120 seconds counts as no. The value is shown so the person can judge it, then wiped
+from the database once answered.
 
 ### Inside LiteLLM
 
-Already run the LiteLLM proxy? Add the guard there as a guardrail instead of running a second gateway.
-Install `prestige[litellm]` next to the proxy and add this to its `config.yaml`:
+Teams already running the LiteLLM proxy can add the guard there, with no second gateway. Install
+`prestige[litellm]` next to the proxy and add this to its `config.yaml`:
 
 ```yaml
 guardrails:
@@ -140,60 +180,104 @@ guardrails:
       labels: banking,slack
 ```
 
-It checks each chat completion reply against the request's tool results. A blocked call leaves the
-reply and the same notice as `prestige serve` takes its place. `labels` takes bundled names or paths.
-There's no confirm step here, so every R1 hit blocks. Tested against litellm 1.105.1, and checked in a
-running proxy on Muse Spark.
+It checks each chat completion reply against the request's tool results and swaps a blocked call for
+the same notice `prestige serve` uses. It has no confirm step, so every R1 hit blocks. Tested against
+litellm 1.105.1 and checked in a running proxy on Muse Spark.
 
 ## How it works
 
-The gateway sees tool results in each request and tool calls in each reply.
+The gateway sees the tool results in each request and the tool calls in each reply.
 
-Each tool gets a label saying what it can do and which arguments pick where money or data goes. Rule R1
-blocks a high-impact call when that destination appears only in tool output, never in the user's or
-system's own text. It's plain code with no model calls and no extra tokens. With the confirm step on,
-the user gets asked instead, and approvals match by hash.
+| Part | What it does |
+|---|---|
+| Guard | Each tool has a label: how much harm it can do, and which arguments are sinks, the ones that pick where something goes. Rule R1 blocks a high-impact call when a sink value appears only in tool output, never in the user's or system's own text. Plain code, no model call, no extra tokens |
+| Confirm step | A blocked value can go to the user as a question. Approvals match by hash |
+| Cost | Policies from [agent-cost-harness](https://github.com/IrwinJam/agent-cost-harness), pinned at `576fe5e`. A stable prompt layout keeps the provider's cache warm, and reasoning effort is set low. Low effort accounts for most of the saving |
 
-Cost comes from [agent-cost-harness](https://github.com/IrwinJam/agent-cost-harness), pinned at commit
-`576fe5e`. It keeps the prompt layout stable so the provider's cache hits more often, and sets reasoning
-effort low.
+Labels are versioned YAML in `prestige/guard/labels/`, and old versions never change. The full design,
+known misses and code map are in [docs/DESIGN.md](docs/DESIGN.md).
 
-Labels are versioned YAML in `prestige/guard/labels/`, and old versions never change. More in
-[docs/DESIGN.md](docs/DESIGN.md).
+## Product
+
+### Who it's for
+
+Teams running agents that move money or touch customer data, like fintech operations
+and support automation. They pay for tokens on every step, and every tool result is text
+someone else could have written.
+
+### What they get
+
+One install, one base URL. The cost cut shows up on the first bill, and the guard
+comes in the same install. Every block and every dollar is in a trace the team owns.
+
+### Ways in
+
+| Channel | State |
+|---|---|
+| `prestige serve`, a drop-in gateway | Built, checked live |
+| LiteLLM guardrail, for teams already on LiteLLM | Built, checked in a running proxy |
+| MCP tool sets, labels drafted from their schemas | Built, IBM Qiskit as the first outside example |
+| Hosted gateway with team keys and a weekly savings report | Planned |
+
+### How it would sell
+
+An open source core, with a paid hosted gateway priced as a share of the measured
+savings. The savings pay for it. The guard is the reason to keep it.
+
+### What's next
+
+- Approvals in Slack or email, so the confirm step reaches people where they work.
+- Spend caps on what tools cost, not just tokens. An agent on IBM's Qiskit server spends QPU time, and
+  the same gap exists for cloud GPUs and paid APIs.
+- A check on message bodies, the one gap the results show.
 
 ## Prior work
 
 R1 is the same idea as [ROPE](https://arxiv.org/abs/2608.27496) (2026), which blocks sensitive tool
-arguments whose only origin is attacker-writable content, and a small cousin of
+arguments whose only origin is attacker-writable content. It's a small cousin of
 [CaMeL](https://arxiv.org/abs/2503.18813), which tracks data flow with an interpreter. In AutoDojo's
-adaptive attack tests, origin checks like these held up best of the defenses tried. Prestige puts the
-check in a drop-in gateway next to cost savings, and measures both on Meta's models.
+adaptive attack tests, origin checks like these held up best of the defenses tried. Prestige's part is
+putting the check in a drop-in gateway next to cost savings, and measuring both on Meta's models.
 
-## No attack text
+## Repo safety
 
 This repo holds no attacks. Attacks come from AgentDojo (MIT), installed from PyPI at a pinned version,
-and from [AutoDojo](https://github.com/xhOwenMa/AutoDojo)'s published injections (MIT), read from a
-local checkout at run time. Run logs stay in `runs/`, which is never committed. Reports hold counts and
-task IDs only. `tests/test_public_hygiene.py` checks this on every test run.
+and from AutoDojo's published injections (MIT), read from a local checkout at run time. Run logs stay
+in `runs/`, which is never committed. Reports hold counts and task IDs only. `tests/test_public_hygiene.py`
+checks this on every test run, and CI runs a secret scan.
 
-## Setup
+## Development
+
+### Setup
 
 ```bash
 python -m venv .venv
 .venv/Scripts/python -m pip install -e ".[dev,security]"   # Mac or Linux: .venv/bin/python
 .venv/Scripts/python -m pytest
-.venv/Scripts/python -m prestige.eval.demo
 ```
 
-## Live runs
+### Live runs
 
-A run needs a spend cap and picks up where it stopped when you run it again.
+A run needs a spend cap and picks up where it stopped when run again.
 
 ```bash
 .venv/Scripts/python -m prestige.eval.live --max-total 10 --name main-benign --setups A,C,D,E --suites banking,slack,travel --scope benign
 .venv/Scripts/python -m prestige.eval.live_report --name main-benign
 ```
 
-Add `--provider baseten` for Spark Open, or `--simulate` for a scripted fake model that spends nothing.
-`--attack` picks another AgentDojo attack, or AutoDojo's with an `autodojo:` path. Setups are defined in
-the protocol.
+`--provider baseten` runs Spark Open. `--simulate` uses a scripted fake model that spends nothing.
+`--attack` picks another AgentDojo attack, or AutoDojo's with an `autodojo:` path. Setups A to E are
+defined in the protocol.
+
+### Reports
+
+All read saved traces, so none of them spend anything.
+
+| Command | Report |
+|---|---|
+| `python -m prestige.eval.live_report` | One live run |
+| `python -m prestige.eval.repeat_report` | Attacked pairs run many times |
+| `python -m prestige.eval.overhead` | Time the gateway adds |
+| `python -m prestige.eval.cache_report` | Why input missed the cache |
+| `python -m prestige.eval.draft_check` | Drafted labels against hand-written ones |
+| `python -m prestige.eval.replay` | Offline replay with a scripted agent |

@@ -1,6 +1,6 @@
 # Design
 
-How the guard works, what it misses, and how the code is laid out. Results are in
+How the guard works and what it misses, with a map of the code. Results are in
 [RESULTS.md](RESULTS.md).
 
 ## Flow
@@ -46,27 +46,34 @@ Unlisted tools get every argument checked. Each version lives in its own folder 
 
 v2 and v3 were changed after offline replays of banking and Slack. Travel is the blind check.
 
-For new tools, `prestige labels draft` writes a first draft from the tool schemas: URL arguments make a
-tool a boundary tool, read verbs make it read-only, and argument names like `recipient`, `channel` or
-`email` become sinks. Anything it can't place gets every argument checked. A person still sets
-`trusted_output` and `fields`. See [DRAFT_LABELS.md](DRAFT_LABELS.md).
+For new tools, `prestige labels draft` writes a first draft from the tool schemas. A URL argument makes
+a tool a boundary tool, and a read verb like `get_` or `list_` makes it read-only. Destination names
+like `recipient` or `channel` become sinks, and so does any credential like `token`. Anything it can't
+place gets every argument checked. A person still sets `trusted_output` and `fields`. See
+[DRAFT_LABELS.md](DRAFT_LABELS.md).
 
 ## Rules
 
-**R1, sink provenance.** Blocks a high-impact call when a sink value appears in untrusted output and
+### R1, sink provenance
+
+Blocks a high-impact call when a sink value appears in untrusted output and
 nowhere in trusted text. Matching ignores case and spacing. URLs match without scheme or `www.`.
 Message bodies aren't checked, because summarizing tool output into a message is normal work.
 
-**R2, tool named by content.** Flags a high-impact call when untrusted output names the tool and trusted
+### R2, tool named by content
+
+Flags a high-impact call when untrusted output names the tool and trusted
 text doesn't. It only flags by default.
 
-**Confirm step.** An R1 hit can go to the user as a question instead of a block. Approvals match the
+### Confirm step
+
+An R1 hit can go to the user as a question instead of a block. Approvals match the
 value by hash. In evals a stand-in user approves values from the task's reference solution, which is a
 best case.
 
 With `serve --ask` or `live --ask`, a real person answers instead. The gateway writes the question to an
-`approvals` table in the trace database and waits. `prestige buddy watch` shows the tool, the value
-and where it came from, and writes back yes or no. No answer before `--ask-timeout`, 120 seconds by
+`approvals` table in the trace database and waits. `prestige buddy watch` shows the value and where it
+came from, and writes back yes or no. No answer before `--ask-timeout`, 120 seconds by
 default, counts as no. The value is shown printable and cut to 80 characters, since it may come from an
 attacker, and it's wiped from the table as soon as the question is answered or times out. The code is
 in `prestige/approvals.py`.
@@ -93,20 +100,23 @@ store and policies.
 
 | File | Role |
 |---|---|
-| `prestige/gateway.py` | `GuardedSession` subclasses the harness `Session` and screens each reply. Also the server builder |
+| `prestige/gateway.py` | `GuardedSession` subclasses the harness `Session` and screens each reply. Also the server builder and session affinity |
 | `prestige/__main__.py` | `python -m prestige serve`, the harness's `serve` plus guard options |
 | `prestige/guard/provenance.py` | Trusted and untrusted spans, value matching |
 | `prestige/guard/labels.py` | Versioned tool labels |
 | `prestige/guard/policy.py` | R1, R2, the notice, findings |
 | `prestige/guard/draft.py` | First-draft labels from OpenAI or MCP tool schemas, `prestige labels draft` |
 | `prestige/approvals.py` | Questions to a real person through the trace database, for `--ask` |
-| `prestige/buddy.py` | The terminal sprite: demo, results, spend, and `watch`, which answers questions |
+| `prestige/buddy.py` | The terminal sprite. `watch` follows guard events and answers questions |
+| `prestige/integrations/litellm.py` | The guard as a LiteLLM proxy guardrail |
 | `prestige/eval/agentdojo.py` | AgentDojo through the gateway, one pair at a time |
 | `prestige/eval/published.py` | AutoDojo's published injections, read at run time |
 | `prestige/eval/replay.py` | Offline replay with a scripted agent, and its report |
 | `prestige/eval/live.py`, `live_report.py` | Live runs with spend caps, and their report |
 | `prestige/eval/repeat_report.py` | Report for attacked pairs run many times |
 | `prestige/eval/overhead.py` | Time the guard adds, from live traces |
+| `prestige/eval/cache_report.py` | Why input missed the provider's cache, from live traces |
+| `prestige/eval/draft_check.py` | Drafted labels scored against hand-written ones |
 | `prestige/eval/demo.py` | One hijacked task with the guard off and on |
 | `eval/protocol.yaml` | Test plan, committed before any live run |
 
@@ -133,7 +143,7 @@ No attacks are written here, and no attack text is published.
 | Never committed | Enforced by |
 |---|---|
 | Attack or injection text | Attacks come from AgentDojo on PyPI and AutoDojo's files, read at run time |
-| Transcripts, traces, benchmark logs | `runs/`, `*.sqlite` and `*.jsonl` are ignored |
+| Traces and benchmark logs | `runs/`, `*.sqlite` and `*.jsonl` are ignored |
 | Blocked values | Guard events store a hash and a length |
 | Keys | `.env` is ignored. CI runs gitleaks |
 
