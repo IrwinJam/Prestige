@@ -99,13 +99,19 @@ value.
 
 ## Use it
 
+Install it next to any agent. It adds a `prestige` command:
+
 ```bash
-.venv/Scripts/python -m prestige serve --labels banking --muse --policies cache,reason --set reason.escalate=false --max-total 20
+pip install "git+https://github.com/IrwinJam/Prestige"
+prestige labels draft tools.json > my-labels.yaml
+prestige serve --labels my-labels.yaml --muse --policies cache,reason --set reason.escalate=false --max-total 20
 ```
 
-Point any OpenAI-compatible agent at `http://127.0.0.1:<port>/s/<conversation-key>/v1`. For Spark Open,
-swap `--muse` for `--base-url https://inference.baseten.co/v1 --api-key-env BASETEN_API_KEY --provider baseten`.
-Traces and guard events go to a SQLite file.
+`labels draft` reads your tool definitions, OpenAI or MCP style, and writes first-draft labels to review.
+Point any OpenAI-compatible agent at `http://127.0.0.1:<port>/s/<conversation-key>/v1`. The agent's code
+doesn't change. A plain OpenAI SDK agent was checked this way on Muse. For Spark Open, swap `--muse` for
+`--base-url https://inference.baseten.co/v1 --api-key-env BASETEN_API_KEY --provider baseten`. Traces and
+guard events go to a SQLite file. `--labels banking`, `slack` and `travel` load the bundled ones.
 
 Add `--ask` and the gateway asks you before blocking a call. Run `python -m prestige buddy watch` in
 another window to answer:

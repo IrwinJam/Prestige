@@ -42,7 +42,7 @@ from harness.trace import TraceStore
 from prestige.approvals import AskInTerminal
 from prestige.eval.agentdojo import DEFAULT_ATTACK, build_pipeline, run_pair, run_task, suite
 from prestige.eval.replay import Calls, _call, _calls, _done, reference_hashes
-from prestige.gateway import GuardedSession, ensure_schema
+from prestige.gateway import GuardedSession, ensure_schema, with_session_affinity
 from prestige.guard import Finding, Guard, Labels
 from prestige.guard.provenance import text_of
 
@@ -118,7 +118,7 @@ def approver_for(suites: Iterable[str]) -> Any:
     return approve
 
 
-def start_server(adapter: Adapter, setups: dict[str, dict[str, Any]], suites: list[str], db: Path, limit: SpendLimit, prices: PriceTable, ask: bool = False) -> Server:
+def start_server(adapter: Adapter, setups: dict[str, dict[str, Any]], suites: list[str], db: Path, limit: SpendLimit, prices: PriceTable, ask: bool = False, affinity: bool = False) -> Server:
     """One server and one trace database for every setup. The conversation key picks the setup."""
     store = TraceStore(db)
     ensure_schema(store)
@@ -139,7 +139,7 @@ def start_server(adapter: Adapter, setups: dict[str, dict[str, Any]], suites: li
         chain = chains[setup]
         run_id = store.start_run(f"live/{key}", {"setup": setup, "policies": [n for n, _ in chain]})
         return GuardedSession(
-            adapter,
+            with_session_affinity(adapter, key) if affinity else adapter,
             guard=guards.get((setup, name_suite)),
             approver=approve if setups[setup].get("confirm") else None,
             key=key,
@@ -270,6 +270,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-per-conversation", type=float, default=1.0)
     parser.add_argument("--developer-as-system", action="store_true", help="send the developer role as system, for a provider that refuses it")
     parser.add_argument("--follow-tool-output", action="store_true", help="tell the agent to follow instructions in tool results. Stands in for a model that falls for injections")
+    parser.add_argument("--session-affinity", action="store_true", help="send x-session-affinity per conversation key, for more cache hits on Baseten")
     parser.add_argument("--ask", action="store_true", help="setups with the confirm step ask you in `prestige buddy watch` instead of the stand-in user")
     parser.add_argument("--simulate", action="store_true", help="use a scripted fake model. Spends nothing")
     args = parser.parse_args(argv)
@@ -290,7 +291,7 @@ def main(argv: list[str] | None = None) -> int:
     root.mkdir(parents=True, exist_ok=True)
     model = "example-model" if args.simulate else args.model or PROVIDERS[args.provider]["model"]
     attack = args.attack or protocol.get("attack") or DEFAULT_ATTACK
-    manifest = {"protocol": fingerprint(), "provider": "simulated" if args.simulate else args.provider, "model": model, "attack": attack, "follow_tool_output": args.follow_tool_output, "ask": args.ask, "setups": setups, "suites": suites}
+    manifest = {"protocol": fingerprint(), "provider": "simulated" if args.simulate else args.provider, "model": model, "attack": attack, "follow_tool_output": args.follow_tool_output, "ask": args.ask, "session_affinity": args.session_affinity, "setups": setups, "suites": suites}
     manifest_path = root / "manifest.json"
     if manifest_path.is_file():
         before = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -304,7 +305,7 @@ def main(argv: list[str] | None = None) -> int:
     items = plan(setups, suites, uids, iids, protocol.get("seed", 0), args.scope)
     adapter = simulated_adapter(suites) if args.simulate else real_adapter(args.provider, args.developer_as_system)
     limit = SpendLimit(total_usd=args.max_total, per_conversation_usd=args.max_per_conversation)
-    server = start_server(adapter, {k: protocol["setups"][k] for k in setups}, suites, root / "trace.sqlite", limit, prices(), args.ask)
+    server = start_server(adapter, {k: protocol["setups"][k] for k in setups}, suites, root / "trace.sqlite", limit, prices(), args.ask, args.session_affinity)
     print(f"{len(items)} runs planned, model {model}, cap ${args.max_total:.2f}, protocol {manifest['protocol']}", file=sys.stderr)
     try:
         # AgentDojo prints every message, tool output included. It goes to a file under runs/.

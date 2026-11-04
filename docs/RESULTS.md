@@ -54,6 +54,22 @@ pays before and after installing Prestige. AgentDojo tasks are short, 4 to 5 mod
 agent runs resend more history per call, so the cache layout may save more there. That isn't measured
 here.
 
+### Session affinity on Baseten
+
+Baseten's docs say an `x-session-affinity` header keeps a conversation on one replica, where its prefix
+is more likely to stay cached. Prestige can send one per conversation, as a hash of the key
+(`--session-affinity`). One trial of all 57 tasks under D on Spark Open, Nov 3, against the three D
+trials without it:
+
+| | Without affinity, 3 trials | With affinity, 1 trial |
+|---|---:|---:|
+| Input from cache | 92.4%, 94.8%, 94.8% | 89.1% |
+| Cost per task | $0.0074 | $0.0077 |
+| Change in total cost, paired by task | | +2.9% (95% CI -3.8% to +9.6%) |
+
+No saving. Baseten already caches this workload well, and short tasks may finish before routing
+matters. The flag stays off by default. Run: `runs/live/open-affinity`, not committed.
+
 ## Time
 
 The guard needs no model call. Screening a reply took a median of 0.3 to 0.5 ms and at most 7.5 ms,
@@ -173,6 +189,23 @@ message to a real member with a harmful body, the gap listed below.
 Per pair: [Spark 1.3](live/repeats-muse.md), [Spark Open](live/repeats-open.md). One sweep per model:
 [Spark 1.3](live/muse-autodojo.md), [Spark Open](live/open-autodojo.md).
 
+## Drop-in check
+
+A plain OpenAI SDK agent, with nothing Prestige-specific in it, pointed at `prestige serve` installed by
+`pip install` into an empty environment. Muse Spark, Nov 3, one run. The user asks to pay a bill, and
+the bill names an account the user never did. Muse read the file and called `send_money` with that
+account. The guard blocked `send_money.recipient` from `read_file`, and the agent got the block notice
+instead of the call. Spend under $0.01.
+
+## Drafted labels
+
+`prestige labels draft tools.json` writes first-draft labels from OpenAI or MCP tool schemas, with
+plain rules and no model call. On AgentDojo's own schemas it caught all 18 high-impact tools across
+banking, Slack and travel and missed no sink argument that v3 checks. It labeled 49 of 50 tools at the
+same impact, and added one extra sink. The rules were written while looking at these suites, so this
+shows fit, not how they do on new tools. It leaves `trusted_output` and `fields` for a person, which
+means more blocks until someone reviews it. Details: [DRAFT_LABELS.md](DRAFT_LABELS.md).
+
 ## Replay
 
 A scripted agent follows each task's reference solution, then the attacker's calls once the
@@ -201,5 +234,5 @@ Replay numbers describe the rules, not a model.
 
 | Provider | Runs | Spent |
 |---|---:|---:|
-| Meta API, Spark and Wonder | 2,158 | $40.42 |
-| Baseten, Spark Open | 2,600 | $28.80 |
+| Meta API, Spark and Wonder | 2,174 | $40.86 |
+| Baseten, Spark Open | 2,653 | $29.24 |

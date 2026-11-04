@@ -46,3 +46,16 @@ def test_through_the_http_server(tmp_path):
         server.stop()
     assert r.status_code == 200
     assert r.json()["choices"][0]["message"]["content"].startswith("Blocked send_money")
+
+
+def test_session_affinity_is_per_conversation_and_hides_the_key():
+    from harness.adapters import OpenAICompatAdapter
+
+    from prestige.gateway import with_session_affinity
+
+    base = OpenAICompatAdapter("https://example.test/v1", api_key="k", provider="example")
+    a, b, a2 = (with_session_affinity(base, k) for k in ("task-1", "task-2", "task-1"))
+    assert a._headers["x-session-affinity"] == a2._headers["x-session-affinity"] != b._headers["x-session-affinity"]
+    assert "task-1" not in a._headers["x-session-affinity"]
+    assert "x-session-affinity" not in base._headers
+    assert a._client is base._client

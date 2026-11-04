@@ -46,6 +46,11 @@ Unlisted tools get every argument checked. Each version lives in its own folder 
 
 v2 and v3 were changed after offline replays of banking and Slack. Travel is the blind check.
 
+For new tools, `prestige labels draft` writes a first draft from the tool schemas: URL arguments make a
+tool a boundary tool, read verbs make it read-only, and argument names like `recipient`, `channel` or
+`email` become sinks. Anything it can't place gets every argument checked. A person still sets
+`trusted_output` and `fields`. See [DRAFT_LABELS.md](DRAFT_LABELS.md).
+
 ## Rules
 
 **R1, sink provenance.** Blocks a high-impact call when a sink value appears in untrusted output and
@@ -93,6 +98,7 @@ store and policies.
 | `prestige/guard/provenance.py` | Trusted and untrusted spans, value matching |
 | `prestige/guard/labels.py` | Versioned tool labels |
 | `prestige/guard/policy.py` | R1, R2, the notice, findings |
+| `prestige/guard/draft.py` | First-draft labels from OpenAI or MCP tool schemas, `prestige labels draft` |
 | `prestige/approvals.py` | Questions to a real person through the trace database, for `--ask` |
 | `prestige/buddy.py` | The terminal sprite: demo, results, spend, and `watch`, which answers questions |
 | `prestige/eval/agentdojo.py` | AgentDojo through the gateway, one pair at a time |

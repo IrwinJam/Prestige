@@ -132,7 +132,11 @@ class Sprite:
 
 
 def demo(sprite: Sprite, user_task: str = "user_task_0", injection_task: str = "injection_task_0") -> int:
-    from prestige.eval.replay import replay
+    try:
+        from prestige.eval.replay import replay
+    except ImportError:
+        sprite.say("look", "The demo needs the benchmark. Install it with\npip install \"prestige[security]\"")
+        return 1
 
     sprite.model = "scripted agent"
     sprite.wiggle(["idle", "look", "idle"], f"Banking {user_task} with {injection_task} placed.\nScripted agent, no model, no spend.")
@@ -156,13 +160,26 @@ def demo(sprite: Sprite, user_task: str = "user_task_0", injection_task: str = "
     return 0
 
 
-def results(sprite: Sprite, readme: str | Path = "README.md") -> int:
+def _readme(readme: str | Path = "README.md") -> str:
+    """The repo's README, or the copy installed with the package."""
     path = Path(readme)
-    if not path.is_file():
-        sprite.say("look", "No README.md here. Run me from the repo folder.")
+    if path.is_file():
+        return path.read_text(encoding="utf-8")
+    try:
+        from importlib.metadata import metadata
+
+        return metadata("prestige").get_payload() or ""
+    except Exception:  # not installed as a package
+        return ""
+
+
+def results(sprite: Sprite, readme: str | Path = "README.md") -> int:
+    text = _readme(readme)
+    if "## Results" not in text:
+        sprite.say("look", "I can't find the results. Run me from the repo folder.")
         return 1
     rows = []
-    for line in path.read_text(encoding="utf-8").split("## Results", 1)[-1].split("\n## ", 1)[0].splitlines():
+    for line in text.split("## Results", 1)[-1].split("\n## ", 1)[0].splitlines():
         cells = [re.sub(r"\s*\(.*?\)", "", c).strip().replace("**", "") for c in line.strip().strip("|").split("|")]
         if line.startswith("|") and len(cells) == 3 and cells[0] and not set(cells[1]) <= set("-:"):
             rows.append(f"{cells[0]:<52} {cells[1]:>10}  {cells[2]:>10}")
@@ -323,10 +340,7 @@ def _blocks(db: str) -> int:
 
 def _headline(readme: str | Path = "README.md") -> str:
     """The cost cut on each model, from the README's results table."""
-    path = Path(readme)
-    if not path.is_file():
-        return ""
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in _readme(readme).splitlines():
         cells = [re.sub(r"\s*\(.*?\)", "", c).strip().replace("**", "") for c in line.strip().strip("|").split("|")]
         if len(cells) == 3 and cells[0] == "Change":
             return f"{cells[1].lstrip('-')} on Muse Spark and {cells[2].lstrip('-')} on Spark Open"

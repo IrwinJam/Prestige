@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import copy
 import datetime as dt
+import hashlib
 from collections.abc import Callable
 from typing import Any
 
@@ -95,6 +96,21 @@ class GuardedSession(Session):
                 )
 
 
+def with_session_affinity(adapter: Adapter, key: str) -> Adapter:
+    """A copy of the adapter that sends `x-session-affinity` for this conversation.
+
+    Baseten routes requests with the same value to the same replica, where the conversation's prefix is
+    more likely to still be cached. The value is a hash, so the key never leaves this machine. Uses the
+    harness adapter's private `_headers`, which the pinned commit keeps stable. Adapters without it are
+    returned as they are.
+    """
+    if not hasattr(adapter, "_headers"):
+        return adapter
+    session = copy.copy(adapter)  # shares the HTTP client, which is thread-safe
+    session._headers = {**adapter._headers, "x-session-affinity": hashlib.sha256(key.encode()).hexdigest()[:32]}
+    return session
+
+
 def build_server(
     adapter: Adapter,
     *,
@@ -108,6 +124,7 @@ def build_server(
     label: str = "prestige",
     host: str = "127.0.0.1",
     approver: SessionApprover | None = None,
+    affinity: bool = False,
 ) -> Server:
     """The harness's `build_server`, with a guarded session per conversation."""
     store = TraceStore(db)
@@ -121,7 +138,7 @@ def build_server(
         meta = {"serve": True, "key": key, "policies": [n for n, _ in chain], "guard": guard_meta}
         run_id = store.start_run(f"{label}/{key}", meta)
         return GuardedSession(
-            adapter, guard=guard, approver=approver, key=key, task_id=key, policies=policies, store=store, run_id=run_id, prices=prices, budget=budget, limit=limit
+            with_session_affinity(adapter, key) if affinity else adapter, guard=guard, approver=approver, key=key, task_id=key, policies=policies, store=store, run_id=run_id, prices=prices, budget=budget, limit=limit
         )
 
     return Server(ProxyServer(new_session, host=host, port=port).start(), store, budget, chain)

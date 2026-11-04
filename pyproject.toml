@@ -14,6 +14,9 @@ dependencies = [
     "agent-cost-harness @ git+https://github.com/IrwinJam/agent-cost-harness@576fe5e5dae738b53e84e37fea7532fda544501c",
 ]
 
+[project.scripts]
+prestige = "prestige.__main__:main"
+
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 # Public attack benchmark. Installed, never copied in.
