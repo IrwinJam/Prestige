@@ -8,7 +8,7 @@ It's measured live on Meta's models: Muse Spark through Meta's Model API, and Mu
 weights model, through Baseten.
 
 **Sections:** [Results](#results) · [Try it](#try-it) · [Use it](#use-it) · [How it works](#how-it-works) ·
-[Product](#product) · [Prior work](#prior-work) · [Repo safety](#repo-safety) · [Development](#development)
+[Product](#product) · [Repo safety](#repo-safety) · [Development](#development)
 
 ## Results
 
@@ -157,7 +157,9 @@ prestige labels draft tools.json > my-labels.yaml
 Review the draft before use. It leaves two things for a person: tools that return only the user's own
 data (`trusted_output`), and output fields a tool writes itself (`fields`). Until they're set, the guard
 blocks more, never less. `banking`, `slack` and `travel` are bundled. [examples/](examples/) has a draft
-and a reviewed copy for IBM's Qiskit MCP server.
+and a reviewed copy for IBM's Qiskit MCP server, checked live on Muse:
+
+![The guard on IBM's Qiskit tools: a draft-label block, the reviewed labels, and a blocked job sheet](docs/figures/qiskit.gif)
 
 ### Run the gateway
 
@@ -175,6 +177,8 @@ For Spark Open on Baseten, swap `--muse` for:
 ```
 
 ### Agents that send images
+
+![A 3D render downscaled by the gateway, with image tokens counted both ways](docs/figures/image-pipeline.gif)
 
 ```bash
 prestige serve ... --image-max-side 512 --image-keep-last 2
@@ -278,25 +282,12 @@ comes in the same install. Every block and every dollar is in a trace the team o
 | MCP tool sets, labels drafted from their schemas | Built, IBM Qiskit as the first outside example |
 | Hosted gateway with team keys and a weekly savings report | Planned |
 
-### How it would sell
-
-An open source core, with a paid hosted gateway priced as a share of the measured
-savings. The savings pay for it. The guard is the reason to keep it.
-
 ### What's next
 
 - Approvals in Slack or email, so the confirm step reaches people where they work.
 - Spend caps on what tools cost, not just tokens. An agent on IBM's Qiskit server spends QPU time, and
   the same gap exists for cloud GPUs and paid APIs.
 - A check on message bodies, the one gap the results show.
-
-## Prior work
-
-The origin rule is the same idea as [ROPE](https://arxiv.org/abs/2608.27496) (2026), which blocks sensitive tool
-arguments whose only origin is attacker-writable content. It's a small cousin of
-[CaMeL](https://arxiv.org/abs/2503.18813), which tracks data flow with an interpreter. In AutoDojo's
-adaptive attack tests, origin checks like these held up best of the defenses tried. Prestige's part is
-putting the check in a drop-in gateway next to cost savings, and measuring both on Meta's models.
 
 ## Repo safety
 
@@ -351,5 +342,6 @@ All read saved traces, so none of them spend anything.
 | `python -m prestige.eval.replay` | Offline replay with a scripted agent |
 | `python -m prestige.eval.figures` | The SVG figures in `docs/figures/`, light and dark |
 | `python -m prestige.eval.assistant_gif` | The assistant GIF |
+| `python -m prestige.eval.gifs` | The image pipeline and Qiskit GIFs |
 | `python -m prestige.eval.images` | What images cost on Muse, live, about $0.08 |
 | `python -m prestige.eval.image_policy_check` | The image policy through the gateway, paired, live, about $0.10 |

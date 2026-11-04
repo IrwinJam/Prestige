@@ -281,6 +281,8 @@ reviews it. Details: [DRAFT_LABELS.md](DRAFT_LABELS.md).
 
 ### Qiskit, the first outside tool set
 
+![The guard on IBM's Qiskit tools: a draft-label block, the reviewed labels, and a blocked job sheet](figures/qiskit.gif)
+
 IBM's official Qiskit MCP server, `qiskit-ibm-runtime-mcp-server` 0.6.2, lets an agent run circuits on
 IBM Quantum hardware. Its 20 tool signatures were copied from its source into
 [examples/qiskit-ibm-runtime-mcp-tools.json](../examples/qiskit-ibm-runtime-mcp-tools.json), without

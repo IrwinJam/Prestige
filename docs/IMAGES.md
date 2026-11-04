@@ -1,5 +1,7 @@
 # Images: what they cost and what saves money
 
+![A 3D render downscaled by the gateway, with image tokens counted both ways](figures/image-pipeline.gif)
+
 Agents that read screenshots, scans or 3D renders send images to the model on every step. A 3D render
 reaches the model as an ordinary image, so the same rules apply. This page measures what images cost on
 Muse Spark 1.3 through Meta's API, live on Nov 4 2026, and what Prestige can save. Training doesn't come
