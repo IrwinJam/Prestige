@@ -1,0 +1,11 @@
+# Keys and run data never go into an image
+.env
+runs/
+*.sqlite
+*.sqlite3
+*.jsonl
+.venv/
+.git/
+__pycache__/
+.pytest_cache/
+examples/typescript/node_modules/

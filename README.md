@@ -6,7 +6,6 @@ read. The agent's code doesn't change: you point it at a different base URL.
 
 It's measured live on Meta's models: Muse Spark through Meta's Model API, and Muse Spark Open, the open
 weights model, through Baseten.
-A one-page overview is in [site/index.html](site/index.html).
 
 **Sections:** [Results](#results) · [Try it](#try-it) · [Use it](#use-it) · [How it works](#how-it-works) ·
 [Product](#product) · [Prior work](#prior-work) · [Repo safety](#repo-safety) · [Development](#development)
@@ -151,6 +150,29 @@ For Spark Open on Baseten, swap `--muse` for:
 --base-url https://inference.baseten.co/v1 --api-key-env BASETEN_API_KEY --provider baseten
 ```
 
+### Run it in a container
+
+```bash
+docker build -t prestige .
+docker run --rm -p 127.0.0.1:8787:8787 -e HARNESS_API_KEY -v prestige-data:/data prestige   serve --labels banking --muse --policies cache,reason --set reason.escalate=false --max-total 20
+```
+
+With no arguments the image starts a simulated gateway, which needs no key. `.env` and run data are
+kept out of the image. CI builds the image and sends it a request on every push.
+
+### Agents in other languages
+
+The gateway speaks the OpenAI API, so the agent can be written in anything with an OpenAI client.
+[examples/typescript/](examples/typescript/) is a TypeScript agent on the official OpenAI SDK with the
+base URL as its only change:
+
+```bash
+cd examples/typescript && npm install
+npx tsx agent.ts http://127.0.0.1:8787/s/ts-demo/v1
+```
+
+CI runs it against a simulated gateway on every push.
+
 ### Ask before blocking
 
 With `--ask`, the gateway asks a person instead of blocking outright. Answer in another window with
@@ -250,6 +272,15 @@ checks this on every test run, and CI runs a secret scan.
 ## Development
 
 ### Setup
+
+One command sets up a checkout, runs the tests and the offline demo:
+
+```bash
+bash scripts/quickstart.sh                                       # Mac, Linux, Git Bash
+powershell -ExecutionPolicy Bypass -File scripts\quickstart.ps1  # Windows
+```
+
+Or by hand:
 
 ```bash
 python -m venv .venv

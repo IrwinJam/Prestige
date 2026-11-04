@@ -1,0 +1,18 @@
+{
+  "name": "prestige-typescript-agent",
+  "private": true,
+  "description": "A TypeScript agent on the OpenAI SDK, pointed at the Prestige gateway",
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "start": "tsx agent.ts"
+  },
+  "dependencies": {
+    "openai": "4.77.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "tsx": "4.19.2",
+    "typescript": "5.7.2"
+  }
+}
