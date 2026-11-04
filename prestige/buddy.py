@@ -13,10 +13,12 @@ from __future__ import annotations
 
 import contextlib
 import os
+import queue
 import re
 import shlex
 import sqlite3
 import sys
+import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -243,41 +245,41 @@ def question(sprite: Sprite, rule: str, target: str, source: str, value: str | N
     return None if reply is None else reply.strip().lower() in ("y", "yes")
 
 
-def ask_while_open(prompt: str, still_open: Callable[[], bool]) -> str | None:
-    """Like input(), but gives up when the question closes. None when it did."""
-    out = sys.stdout
-    out.write(prompt)
-    out.flush()
-    if not sys.stdin.isatty():
-        return sys.stdin.readline()
-    if os.name == "nt":
-        import msvcrt
+_lines: queue.Queue[str | None] = queue.Queue()  # None: stdin closed
+_reader: threading.Thread | None = None
 
-        typed = ""
-        while still_open():
-            while msvcrt.kbhit():
-                ch = msvcrt.getwch()
-                if ch in "\r\n":
-                    out.write("\n")
-                    return typed
-                if ch == "\x03":
-                    raise KeyboardInterrupt
-                if ch == "\b":
-                    if typed:
-                        typed = typed[:-1]
-                        out.write("\b \b")
-                elif ch.isprintable():
-                    typed += ch
-                    out.write(ch)
-                out.flush()
-            time.sleep(0.05)
-    else:
-        import select
 
-        while still_open():
-            if select.select([sys.stdin], [], [], 0.1)[0]:
-                return sys.stdin.readline()
-    out.write("\n")
+def _read_lines() -> None:
+    for line in sys.stdin:
+        _lines.put(line)
+    _lines.put(None)
+
+
+def ask_while_open(prompt: str, still_open: Callable[[], bool], fresh: bool = True) -> str | None:
+    """Like input(), but gives up when the question closes. None when it did.
+
+    One thread reads whole lines from stdin, so typing works the way it does at any shell prompt,
+    in every terminal. With `fresh`, lines typed before the question showed up are thrown away, so a
+    stray keypress can't approve a call.
+    """
+    global _reader
+    if _reader is None:
+        _reader = threading.Thread(target=_read_lines, daemon=True)
+        _reader.start()
+    while fresh and not _lines.empty():
+        if _lines.get_nowait() is None:
+            raise EOFError
+    sys.stdout.write(prompt)
+    sys.stdout.flush()
+    while still_open():
+        try:
+            line = _lines.get(timeout=0.2)
+        except queue.Empty:
+            continue
+        if line is None:
+            raise EOFError
+        return line
+    sys.stdout.write("\n")
     return None
 
 
@@ -403,7 +405,7 @@ def main(argv: list[str]) -> int:
     sprite.wiggle(["blink", "idle"], "Hi. I watch your agent's tool calls.\nType help to see what I can do.")
     while True:
         try:
-            line = input("\nprestige> ")
+            line = ask_while_open("\nprestige> ", lambda: True, fresh=False)
         except (EOFError, KeyboardInterrupt):
             break
         try:
