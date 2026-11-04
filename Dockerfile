@@ -1,6 +1,6 @@
 # The Prestige gateway as a container.
 #   docker build -t prestige .
-#   docker run --rm -p 127.0.0.1:8787:8787 -e HARNESS_API_KEY -v prestige-data:/data prestige \
+#   docker run --rm --network host -e HARNESS_API_KEY -v prestige-data:/data prestige \
 #     serve --labels banking --muse --policies cache,reason --set reason.escalate=false --max-total 20
 # With no arguments it starts a simulated gateway, which needs no key and spends nothing.
 
@@ -21,9 +21,8 @@ RUN useradd --create-home prestige && mkdir /data && chown prestige /data
 USER prestige
 VOLUME /data
 
-# Inside a container the gateway has to listen on every interface. Publish it to 127.0.0.1 on the host,
-# as above, unless it sits behind your own auth.
-ENV HARNESS_HOST=0.0.0.0
+# The gateway only ever listens on localhost, a rule the cost harness enforces. Run the container with
+# host networking, as above, so that's localhost on the host and nothing else can reach it.
 EXPOSE 8787
 
 ENTRYPOINT ["prestige"]
